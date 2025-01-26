@@ -1,0 +1,113 @@
+variables:
+  REPOSITORY_FILES_API_URL: "${CI_API_V4_URL}/projects/278964/repository/files"
+  KHULNASOFT_SHELL_VERSION_FILE_URL: "${REPOSITORY_FILES_API_URL}/KHULNASOFT_SHELL_VERSION/raw?ref=master"
+  GITALY_SERVER_VERSION_FILE_URL: "${REPOSITORY_FILES_API_URL}/GITALY_SERVER_VERSION/raw?ref=master"
+
+.compile-job-base:
+  stage: build
+  extends:
+    - .rules:compile-binary
+  artifacts:
+    when: on_success
+    paths:
+      - '**/checksums.txt'
+      - '**/metadata.txt'
+    expire_in: 14d
+
+.compile-on-linux-base:
+  extends:
+    - .compile-job-base
+  image: golang:1.22.4
+  tags:
+    - khulnasoft-org
+  variables:
+    BUILD_OS: "linux"
+
+.compile-on-linux:
+  extends:
+    - .compile-on-linux-base
+  parallel:
+    matrix:
+      - BUILD_ARCH:
+        - "amd64"
+        - "arm64"
+
+.compile-on-linux-x86:
+  extends:
+    - .compile-on-linux-base
+  variables:
+    BUILD_ARCH: "amd64"
+
+.compile-on-linux-arm64:
+  extends:
+    - .compile-on-linux-base
+  tags:
+    - saas-linux-medium-arm64
+  variables:
+    BUILD_ARCH: "arm64"
+
+.compile-on-macos:
+  extends:
+    - .compile-job-base
+  image: macos-14-xcode-15
+  tags:
+    - saas-macos-medium-m1
+  variables:
+    BUILD_OS: "darwin"
+    BUILD_ARCH: "arm64"
+
+compile:linux:khulnasoft-shell:
+  extends:
+    - .compile-on-linux
+  script:
+    - support/ci/setup-compile khulnasoft-shell
+
+compile:macos:khulnasoft-shell:
+  extends:
+    - .compile-on-macos
+  script:
+    - support/ci/setup-compile khulnasoft-shell
+
+compile:linux:khulnasoft-workhorse:
+  extends:
+    - .compile-on-linux
+  script:
+    - support/ci/setup-compile workhorse
+
+compile:macos:khulnasoft-workhorse:
+  extends:
+    - .compile-on-macos
+  image: macos-14-xcode-15
+  script:
+    - support/ci/setup-compile workhorse
+
+# Gitaly compiles `git` binaries, so it's easier to use an arm64
+# runner than set up for cross-compiling.
+compile:linux-x86:gitaly:
+  extends:
+    - .compile-on-linux-x86
+  script:
+    - support/ci/setup-compile gitaly
+
+compile:linux-arm64:gitaly:
+  extends:
+    - .compile-on-linux-arm64
+  script:
+    - support/ci/setup-compile gitaly
+
+compile:macos:gitaly:
+  extends:
+    - .compile-on-macos
+  script:
+    - support/ci/setup-compile gitaly
+
+packages-cleanup:
+  extends:
+    - .rules:packages-cleanup
+  stage: cleanup
+  image: ruby:${RUBY_VERSION}
+  before_script:
+    - gem install httparty --no-document --version 0.20.0
+    - gem install khulnasoft --no-document --version 4.19.0
+  script:
+    - support/package-cleanup

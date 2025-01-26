@@ -1,0 +1,20 @@
+<% hmr =
+  (
+    if config.vite.hot_module_reloading?
+      {
+        clientPort: (config.nginx? ? config.nginx.__port : config.vite.port),
+        host: (config.nginx? ? config.hostname : config.listen_address),
+        protocol: (config.nginx? && config.https? ? "wss" : "ws")
+      }
+    else
+      nil
+    end
+  ) -%>
+<%= JSON.pretty_generate(
+  {
+    enabled: service(:Vite).enabled?,
+    host: config.listen_address,
+    port: config.vite.port,
+    hmr: hmr,
+  },
+) %>

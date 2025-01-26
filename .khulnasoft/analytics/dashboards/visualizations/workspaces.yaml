@@ -1,0 +1,23 @@
+version: 1
+type: DataTable
+data:
+  type: cube_analytics
+  query:
+    measures:
+      - TrackedEvents.count
+    dimensions:
+      - TrackedEvents.customEventName
+      - TrackedEvents.customEventProps
+      - TrackedEvents.userId
+    timeDimensions:
+      - dimension: TrackedEvents.derivedTstamp
+        granularity: second
+    order:
+      TrackedEvents.derivedTstamp: desc
+    filters:
+      - member: TrackedEvents.customEventName
+        operator: equals
+        values:
+          - Finish setup-workspace []
+          - Failed setup-workspace []
+options: {}

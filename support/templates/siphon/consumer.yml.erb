@@ -1,0 +1,20 @@
+application_identifier: "consumer"
+queueing:
+  driver: "nats"
+  url: "localhost:4222"
+  stream_name: "siphon_stream_main_db"
+  snapshot_stream_name: "siphon_stream_table_snapshot_events"
+streams:
+  <%- config.siphon.tables.each do |table| -%>
+  - identifier: <%= table %>
+    subject: <%= table %>
+    target: siphon_<%= table %>
+  <%- end -%>
+
+clickhouse:
+  host: localhost
+  port: <%= config.clickhouse.tcp_port %>
+  user: default
+  database: khulnasoft_clickhouse_development
+prometheus:
+  port: 8084

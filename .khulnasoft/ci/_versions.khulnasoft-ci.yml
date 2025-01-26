@@ -1,0 +1,2 @@
+variables:
+  GO_VERSION: "1.23.4" # Released 2024-12-03

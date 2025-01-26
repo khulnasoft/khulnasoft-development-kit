@@ -1,0 +1,38 @@
+.build-job:
+  stage: build
+  extends:
+    - .docker:build-docker-in-docker
+  tags:
+    - saas-linux-large-amd64
+
+release-image:
+  extends:
+    - .build-job
+  script:
+    - ./support/docker ci-build-if-necessary
+  rules:
+    - !reference [.rules:code-changes, rules]
+    # Re-tag latest image with git sha on no-op changes
+    # This ensures that each commit sha in default branch has a corresponding image tagged with same sha
+    - if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+      variables:
+        RETAG_LATEST_RELEASE: "true"
+  parallel:
+    matrix:
+      - TOOL_VERSION_MANAGER:
+        - "mise"
+        - "asdf"
+
+build-gitpod-workspace-image:
+  extends:
+    - .build-job
+    - .rules:gitpod-code-changes
+  script:
+    - ./support/docker-build ./support/gitpod "$GITPOD_WORKSPACE_IMAGE:$CI_COMMIT_REF_SLUG"
+
+build-khulnasoft-remote-workspace-image:
+  extends:
+    - .build-job
+    - .rules:khulnasoft-remote-code-changes
+  script:
+    - ./support/docker-build ./support/khulnasoft-remote-development "$KHULNASOFT_REMOTE_WORKSPACE_IMAGE:$CI_COMMIT_REF_SLUG"

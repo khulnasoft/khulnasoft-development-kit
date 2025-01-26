@@ -1,0 +1,79 @@
+# KDK Procfile services:
+# - all commands must start with 'exec'
+# - no inline shell scripts ('&&' or ';')
+#
+
+# Datasources
+#
+<%= '#' unless config.postgresql.replica_2? %>postgresql-replica-2: exec support/postgresql-signal-wrapper <%= config.postgresql.bin %> -D <%= config.postgresql.replica_2.data_directory %> -k <%= config.postgresql.replica_2.root_directory %> -h '' -c max_connections=<%= config.postgresql.max_connections %>
+<%= '#' unless config.openldap? %>openldap: exec support/exec-cd khulnasoft-openldap libexec/slapd -F slapd.d -d2 -h "ldap://<%= config.hostname %>:3890"
+<%= '#' unless config.pgbouncer_replicas? %>pgbouncer1: exec pgbouncer pgbouncers/pgbouncer-replica-1.ini
+<%= '#' unless config.pgbouncer_replicas? %>pgbouncer2: exec pgbouncer pgbouncers/pgbouncer-replica-2.ini
+<%= '#' unless config.pgbouncer_replicas? && config.postgresql.replica_2? %>pgbouncer2-1: exec pgbouncer pgbouncers/pgbouncer-replica-2-1.ini
+<%= '#' unless config.pgbouncer_replicas? && config.postgresql.replica_2? %>pgbouncer2-2: exec pgbouncer pgbouncers/pgbouncer-replica-2-2.ini
+<%= '#' unless config.load_balancing.discover? %>consul: exec /usr/bin/env PGPASSWORD=khulnasoft consul agent -config-file consul/config.json -dev
+
+# Geo
+#
+<%= '#' unless config.geo? && config.geo.secondary? %>postgresql-geo: exec support/postgresql-signal-wrapper <%= config.postgresql.bin %> -D <%= config.postgresql.geo.dir.join('data') %> -k <%= config.postgresql.geo.dir %> -h '<%= config.postgresql.geo.__active_host %>'
+<%= '#' unless config.geo? && config.geo.secondary? %>geo-cursor: exec /usr/bin/env RAILS_RELATIVE_URL_ROOT=<%= config.relative_url_root %> KDK_GEO_SECONDARY=1 support/geo-logcursor
+
+# Backend services
+#
+<%= '#' unless config.khulnasoft_k8s_agent.enabled and !config.khulnasoft_k8s_agent.configure_only %>khulnasoft-k8s-agent: exec /usr/bin/env OWN_PRIVATE_API_URL='<%= config.khulnasoft_k8s_agent.__private_api_url %>' <%= config.khulnasoft_k8s_agent.__command %> --configuration-file '<%= config.khulnasoft_k8s_agent.__config_file %>'
+<% if config.praefect? -%>
+praefect: exec <%= config.praefect.__praefect_build_bin_path %> --config <%= config.praefect.config_file %> serve
+<% config.praefect.__nodes.each_with_index do |praefect_node, index| -%>
+<%= praefect_node.service_name %>: exec /usr/bin/env <% config.gitaly.env.each do |k, v| %><%= k %>=<%= v %> <% end %>GITALY_TESTING_ENABLE_ALL_FEATURE_FLAGS=<%= config.gitaly.enable_all_feature_flags? %> GITALY_LOG_REQUEST_METHOD_DENY_PATTERN="^/grpc.health.v1.Health/Check$" support/exec-cd gitaly <%= config.gitaly.__gitaly_build_bin_path %> serve <%= kdk_root.join(praefect_node.config_file) %>
+<% end -%>
+<% end -%>
+<% if config.gitaly? -%>
+gitaly: exec /usr/bin/env <% config.gitaly.env.each do |k, v| %><%= k %>=<%= v %> <% end %> GITALY_TESTING_ENABLE_ALL_FEATURE_FLAGS=<%= config.gitaly.enable_all_feature_flags? %> support/exec-cd gitaly <%= config.gitaly.__gitaly_build_bin_path %> serve <%= config.gitaly.config_file %>
+<% end -%>
+
+# Frontend services
+#
+<%= '#' unless config.khulnasoft_ui? %>khulnasoft-ui: exec /usr/bin/env NODE_ENV=development support/exec-cd khulnasoft-ui yarn build --watch
+<%= '#' unless config.webpack? %>webpack: exec /usr/bin/env NODE_ENV=development DEV_SERVER_STATIC=<%= config.webpack.static?%> <%= "VUE_VERSION=#{config.webpack.vue_version}" if config.webpack.__set_vue_version %> WEBPACK_VENDOR_DLL=<%= config.webpack.vendor_dll? %> DEV_SERVER_INCREMENTAL=<%= config.webpack.incremental? %> DEV_SERVER_INCREMENTAL_TTL=<%= config.webpack.incremental_ttl %> DEV_SERVER_LIVERELOAD=<%= config.webpack.live_reload? %> NO_SOURCEMAPS=<%= !config.webpack.sourcemaps? %> DEV_SERVER_PORT=<%= config.webpack.port %> DEV_SERVER_PUBLIC_ADDR=<%= config.webpack.__dev_server_public %> DEV_SERVER_HOST=<%= config.webpack.host %> DEV_SERVER_ALLOWED_HOSTS="<%= config.webpack.allowed_hosts.join(',') %>" KHULNASOFT_UI_WATCH=<%= config.khulnasoft_ui? %> support/exec-cd khulnasoft yarn dev-server
+<%= '#' unless config.khulnasoft_pages? %>khulnasoft-pages: exec khulnasoft-pages/bin/khulnasoft-pages -config=<%= kdk_root.join('khulnasoft-pages', 'khulnasoft-pages.conf') %>
+
+# Container Registry
+#
+<%= '#' unless config.registry? %>registry: exec support/exec-cd container-registry bin/registry serve <%= kdk_root.join('registry', 'config.yml') %>
+
+# Monitoring and tracing
+#
+<%= '#' unless config.grafana? %>grafana: exec support/exec-cd grafana grafana/bin/grafana-server -homepath grafana -config grafana.ini
+<%= '#' unless config.prometheus? %>prometheus: exec docker run --rm -p <%= config.prometheus.port %>:9090 -v <%= kdk_root.join('prometheus', 'prometheus.yml') %>:/etc/prometheus/prometheus.yml prom/prometheus:v2.25.0
+<%= '#' unless config.tracer.jaeger? %>jaeger: exec jaeger/jaeger-<%= config.tracer.jaeger.version %>/jaeger-all-in-one --memory.max-traces 512 --http-server.host-port "<%= config.tracer.jaeger.listen_address %>:5778" --processor.jaeger-binary.server-host-port "<%= config.tracer.jaeger.listen_address %>:6832" --processor.jaeger-compact.server-host-port "<%= config.tracer.jaeger.listen_address %>:6831" --processor.zipkin-compact.server-host-port "<%= config.tracer.jaeger.listen_address %>:5775" --admin.http.host-port "<%= config.tracer.jaeger.listen_address %>:14269" --query.host-port "<%= config.tracer.jaeger.listen_address %>:16686" --collector.http-server.host-port "<%= config.tracer.jaeger.listen_address %>:14268" --collector.grpc-server.host-port "<%= config.tracer.jaeger.listen_address %>:14250" --collector.zipkin.host-port "<%= config.tracer.jaeger.listen_address %>:5555"
+
+# Additional services
+#
+<%= '#' unless config.zoekt? %>khulnasoft-zoekt-indexer-development-1: exec khulnasoft-zoekt-indexer/bin/khulnasoft-zoekt-indexer -index_dir zoekt-data/development/index -listen :<%= config.zoekt.index_port_dev_1 %> -secret_path <%= config.khulnasoft_shell.dir.join('.khulnasoft_shell_secret') %> -self_url "http://localhost:<%= config.zoekt.index_port_dev_1 %>" -search_url "http://localhost:<%= config.zoekt.web_port_dev_1 %>" -khulnasoft_url <%= config.__uri %>
+<%= '#' unless config.zoekt? %>khulnasoft-zoekt-indexer-development-2: exec khulnasoft-zoekt-indexer/bin/khulnasoft-zoekt-indexer -index_dir zoekt-data/development/index-2 -listen :<%= config.zoekt.index_port_dev_2 %> -secret_path <%= config.khulnasoft_shell.dir.join('.khulnasoft_shell_secret') %> -self_url "http://localhost:<%= config.zoekt.index_port_dev_2 %>" -search_url "http://localhost:<%= config.zoekt.web_port_dev_2 %>" -khulnasoft_url <%= config.__uri %>
+<%= '#' unless config.zoekt? %>khulnasoft-zoekt-indexer-test: exec khulnasoft-zoekt-indexer/bin/khulnasoft-zoekt-indexer -index_dir zoekt-data/test/index -listen :<%= config.zoekt.index_port_test %>
+<%= '#' unless config.zoekt? %>zoekt-webserver-test: exec /usr/bin/env PATH="$(pwd)/zoekt/bin:$PATH" zoekt/bin/zoekt-webserver -index zoekt-data/test/index -rpc -listen :<%= config.zoekt.web_port_test %>
+<%= '#' unless config.zoekt? %>zoekt-webserver-development-1: exec /usr/bin/env PATH="$(pwd)/zoekt/bin:$PATH" zoekt/bin/zoekt-webserver -index zoekt-data/development/index -rpc -listen :<%= config.zoekt.web_port_dev_1 %>
+<%= '#' unless config.zoekt? %>zoekt-webserver-development-2: exec /usr/bin/env PATH="$(pwd)/zoekt/bin:$PATH" zoekt/bin/zoekt-webserver -index zoekt-data/development/index-2 -rpc -listen :<%= config.zoekt.web_port_dev_2 %>
+
+<%= '#' unless config.duo_workflow.enabled %>duo-workflow-service: exec /usr/bin/env PORT=<%= config.duo_workflow.port %> support/exec-cd duo-workflow-service poetry run duo-workflow-service
+
+# Khulnasoft Runner Binary
+#
+<%= '#' unless config.runner.__install_mode_binary %>runner: exec <%= config.runner.bin %> --log-level debug run --config <%= config.runner.config_file %>
+
+# Khulnasoft Runner Docker
+#
+<%= '#' unless config.runner.__install_mode_docker && !config.https? %>runner: exec docker run --rm <%= config.runner.__add_host_flags %> -v '<%= config.runner.config_file %>:/etc/khulnasoft-runner/config.toml' -v /var/run/docker.sock:/var/run/docker.sock --pull <%= config.runner.docker_pull %> <%= config.runner.image %>
+
+# Khulnasoft Runner Docker with HTTPS
+#
+<%= '#' unless config.runner.__install_mode_docker && config.https? %>runner: exec docker run --rm <%= config.runner.__add_host_flags %> -v '<%= config.runner.config_file %>:/etc/khulnasoft-runner/config.toml' -v '<%= kdk_root.join(config.nginx.ssl.certificate) %>:/etc/khulnasoft-runner/certs/<%= config.runner.__ssl_certificate %>' -v /var/run/docker.sock:/var/run/docker.sock --pull <%= config.runner.docker_pull %> <%= config.runner.image %>
+
+# Mattermost
+#
+<%= '#' unless config.mattermost? %>mattermost: exec docker run --rm --sig-proxy=true -v <%= kdk_root.join('mattermost', 'data') %>:/mm/mattermost-data/  -v <%= kdk_root.join('mattermost', 'mysql') %>:/var/lib/mysql --publish <%= config.mattermost.port %>:8065 <%= config.mattermost.image %>
+
+# Snowplow Micro
+#
+<%= '#' unless config.snowplow_micro? %>snowplow-micro: exec docker run --rm --mount type=bind,source=<%= kdk_root.join('snowplow') %>,destination=/config -p <%= config.snowplow_micro.port %>:9091 <%= config.snowplow_micro.image %> --collector-config /config/snowplow_micro.conf --iglu /config/iglu.json

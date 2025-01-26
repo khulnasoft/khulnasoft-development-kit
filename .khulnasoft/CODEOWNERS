@@ -1,0 +1,11 @@
+# Code Owners - https://docs.khulnasoft.com/ee/user/project/code_owners.html
+
+[Maintainers]
+* @khulnasoft-org/maintainers/khulnasoft-development-kit
+.ruby-version @khulnasoft-org/maintainers/khulnasoft-development-kit @eread
+.tool-versions* @khulnasoft-org/maintainers/khulnasoft-development-kit @eread
+/doc/ @khulnasoft-org/maintainers/khulnasoft-development-kit @khulnasoft-org/maintainers/khulnasoft-development-kit/documentation
+HELP @khulnasoft-org/maintainers/khulnasoft-development-kit @khulnasoft-org/maintainers/khulnasoft-development-kit/documentation
+README.md @khulnasoft-org/maintainers/khulnasoft-development-kit @khulnasoft-org/maintainers/khulnasoft-development-kit/documentation
+/support/kdk-in-a-box/ @leetickett-khulnasoft @khulnasoft-org/maintainers/khulnasoft-development-kit
+/.khulnasoft/analytics/ @leetickett-khulnasoft @khulnasoft-org/maintainers/khulnasoft-development-kit

@@ -1,0 +1,15 @@
+---
+header: Pre-compiled binaries are now enabled by default for Gitaly
+body: |
+  KDK now downloads and uses pre-compiled binaries for Gitaly by default.
+  This change speeds up the setup and update process by removing the need to compile from source.
+
+  If you're working directly on Gitaly and need to compile them locally, please disable the pre-compiled binaries by running the following command:
+
+  ```
+  kdk config set gitaly.skip_compile false
+  ```
+
+  After that, run `kdk update` to apply the new settings.
+
+  For more details, see <https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2228>.

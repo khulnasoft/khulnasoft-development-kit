@@ -1,0 +1,8 @@
+---
+header: Container registry now supports running with the metadata database.
+body: |
+  The Container metadata database enables many new registry features, including online garbage collection, and increases the efficiency of many registry operations.
+
+  By default, the KDK Container registry still runs without the metadata database. To opt-in to using the metadata database in your KDK environment follow the steps detailed in: https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/doc/howto/registry.md?ref_type=heads#metadata-database.
+
+  For more details on the Container registry metadata database, see https://docs.khulnasoft.com/ee/administration/packages/container_registry_metadata_database.html.

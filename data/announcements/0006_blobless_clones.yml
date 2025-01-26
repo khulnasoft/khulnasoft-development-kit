@@ -1,0 +1,8 @@
+---
+header: KDK installs now perform 'blobless' clones by default
+body: |
+  New `kdk install`s now perform 'blobless' clones by default for all managed
+  projects. This will improve both git clone speed and disk space consumed!
+
+  For more details, see
+  https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/1902.

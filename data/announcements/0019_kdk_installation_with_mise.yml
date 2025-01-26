@@ -1,0 +1,12 @@
+---
+header: KDK installation now supports mise as active version manager
+body: |
+  You can now select [mise](https://mise.jdx.dev/) as the default tool version manager during KDK installation. This means you no longer need to switch to mise from asdf after installation.
+
+  To install KDK with mise, please run:
+
+  ```
+  curl "https://github.com/khulnasoft/khulnasoft-development-kit/-/raw/main/support/install" | bash
+  ```
+
+  For more details, see <https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2346>.

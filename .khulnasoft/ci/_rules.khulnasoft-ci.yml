@@ -1,0 +1,205 @@
+##############
+# Conditions #
+##############
+.if-merge-request: &if-merge-request
+  if: '$CI_MERGE_REQUEST_IID'
+
+.if-default-branch-refs: &if-default-branch-refs
+  if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_IID == null'
+
+.if-default-branch-schedule: &if-default-branch-schedule
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule"'
+
+.if-default-branch-schedule-nightly: &if-default-branch-schedule-nightly
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "nightly"'
+
+.if-default-branch-schedule-maintenance: &if-default-branch-schedule-maintenance
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "maintenance"'
+
+.if-release-image: &if-release-image
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "gitpod-image-release"'
+
+.if-merge-request-expedited: &if-merge-request-expedited
+  if: '$CI_MERGE_REQUEST_LABELS =~ /pipeline::expedited/'
+
+.if-run-compile-jobs-label: &if-run-compile-jobs-label
+  if: '$CI_MERGE_REQUEST_LABELS =~ /pipeline:run-compile-jobs/'
+
+.if-fork: &if-fork
+  if: '$CI_PROJECT_NAMESPACE !~ /^khulnasoft(-org)?($|\/)/'
+
+####################
+# Changes patterns #
+####################
+.code-changes: &code-changes
+  - "**/*.{rb,erb,sh,yml,example,types}"
+  - "{lib,gem,bin}/**/*"
+  - "{spec,support}/**/*"
+  - ".ruby-version"
+  - ".tool-versions"
+  - ".kdkrc"
+  - "bin/kdk-shell"
+  - ".khulnasoft-ci.yml"
+  - ".khulnasoft/ci/**/*"
+  - "Gemfile{,.lock}"
+  - "Brewfile"
+  - "Makefile"
+  - "Rakefile"
+  - "Dockerfile"
+  - "**/*/Dockerfile"
+  - "packages*.txt"
+  - "**/*/Makefile"
+  - "Vagrantfile"
+  - "khulnasoft-openldap/**/*"
+  - "vagrant/assets/**/*"
+
+.docs-changes: &docs-changes
+  - "**/*.{md}"
+  - "{doc}/**/*"
+  - ".markdownlint.yml"
+  - "package.json"
+  - "yarn.lock"
+
+.docs-code-changes: &docs-code-changes
+  - "**/*.{md}"
+  - "{doc}/**/*"
+  - "**/*.{rb,erb,sh,yml,example,types}"
+  - "{lib,gem,bin}/**/*"
+  - "{spec,support}/**/*"
+  - ".ruby-version"
+  - ".tool-versions"
+  - ".kdkrc"
+  - "bin/kdk-shell"
+  - ".khulnasoft-ci.yml"
+  - ".khulnasoft/ci/**/*"
+  - "Gemfile{,.lock}"
+  - "Rakefile"
+  - "Dockerfile"
+  - "**/*/Dockerfile"
+  - "packages*.txt"
+  - "**/*/Makefile"
+  - "Vagrantfile"
+  - "khulnasoft-openldap/**/*"
+  - "vagrant/assets/**/*"
+
+.khulnasoft-remote-code-changes: &khulnasoft-remote-code-changes
+  - "packages_debian.txt"
+  - "support/khulnasoft-remote-development/**/*"
+
+.gitpod-code-changes: &gitpod-code-changes
+  - "support/gitpod/**/*"
+  - "support/ci/verify-gitpod-docker-image"
+  - ".khulnasoft-ci.yml"
+  - ".khulnasoft/ci/{build,deploy,verify}.khulnasoft-ci.yml"
+
+.ruby-version-changes: &ruby-version-changes
+  - ".ruby-version"
+  - ".tool-versions"
+
+#########
+# Rules #
+#########
+.rules:build-integration-image:
+  rules:
+    - !reference [.rules:code-changes-verify, rules]
+    - <<: *if-default-branch-schedule-nightly
+    - <<: *if-merge-request
+      changes:
+        - '.khulnasoft/ci/_versions.khulnasoft-ci.yml'
+    - <<: *if-merge-request
+      changes: *code-changes
+      when: manual
+
+.rules:code-changes:
+  rules:
+    - <<: *if-release-image
+      when: never
+    - <<: *if-default-branch-schedule
+    - changes: *code-changes
+
+.rules:geo-install:
+  rules:
+    - <<: *if-fork
+      when: never
+    - !reference [.rules:code-changes-verify, rules]
+
+.rules:code-changes-verify:
+  rules:
+    - <<: *if-release-image
+      when: never
+    - <<: *if-merge-request-expedited
+      when: never
+    - <<: *if-default-branch-schedule
+    - changes: *code-changes
+
+.rules:compile-binary:
+  rules:
+    - <<: *if-fork
+      when: never
+    - <<: *if-run-compile-jobs-label
+    - <<: *if-default-branch-schedule
+    - <<: *if-merge-request
+      when: never
+    - changes: *code-changes
+
+.rules:deploy-image:
+  rules:
+    - <<: *if-release-image
+
+.rules:deploy-pages:
+  rules:
+    - <<: *if-release-image
+      when: never
+    - <<: *if-default-branch-schedule
+      when: never
+    - <<: *if-default-branch-refs
+      changes: *code-changes
+
+.rules:docs-changes:
+  rules:
+    - changes: *docs-changes
+
+.rules:docs-code-changes:
+  rules:
+    - changes: *docs-code-changes
+
+.rules:khulnasoft-remote-code-changes:
+  rules:
+    - <<: *if-release-image
+    - <<: *if-merge-request
+      changes: *khulnasoft-remote-code-changes
+
+.rules:gitpod-code-changes:
+  rules:
+    - <<: *if-release-image
+    - <<: *if-merge-request-expedited
+      when: never
+    - <<: *if-merge-request
+      changes: *gitpod-code-changes
+
+# This rule is for Golang upgrades using mise.
+# Since we don't have a Docker image with mise pre-installed yet, the job needs to install mise every time it runs.
+# To avoid slowing down merge request pipelines, we're running this job nightly instead.
+.rules:golang-upgrade-mise:
+  rules:
+    - !reference [.rules:code-changes-verify, rules]
+    - <<: *if-default-branch-schedule-nightly
+    - <<: *if-merge-request
+      changes:
+        - '.khulnasoft/ci/_versions.khulnasoft-ci.yml'
+    - <<: *if-merge-request
+      changes: *code-changes
+      when: manual
+      allow_failure: true
+
+.rules:packages-cleanup:
+  rules:
+    - <<: *if-merge-request
+      when: never
+    - <<: *if-fork
+      when: never
+    - <<: *if-default-branch-schedule-maintenance
+
+.rules:ruby-version-changes:
+  rules:
+    - changes: *ruby-version-changes

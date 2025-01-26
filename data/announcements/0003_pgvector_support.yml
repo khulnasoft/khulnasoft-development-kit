@@ -1,0 +1,14 @@
+---
+header: pgvector support added
+body: |
+  pgvector can now be added to PostgreSQL. To enable it, simply add the following lines to your kdk.yml file:
+  ```
+  pgvector:
+    enabled: true
+  ```
+
+  or run `kdk config set pgvector.enabled true`
+
+  After adding these lines, please run `kdk reconfigure` to apply the changes.
+
+  See https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/3092 for more details.

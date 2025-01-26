@@ -1,0 +1,110 @@
+########################
+# Base job definitions #
+########################
+
+.integration-base-job:
+  extends:
+    - .verify-job-cached_variables
+    - .rules:code-changes-verify
+  image: ${INTEGRATION_IMAGE}
+  stage: integration
+  needs:
+    - build-integration-image
+  tags:
+    - khulnasoft-org-docker
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - cd /home/kdk/kdk
+    - !reference [.default-before_script, before_script]
+    - |
+      echo "Using ${TOOL_VERSION_MANAGER} for tool version manager"
+      if [ "${TOOL_VERSION_MANAGER}" == "mise" ]; then
+        kdk config set asdf.opt_out true
+        kdk config set mise.enabled true
+      else
+        kdk config set asdf.opt_out false
+        kdk config set mise.enabled false
+      fi
+  after_script:
+    - !reference [.default-after_script, after_script]
+  artifacts:
+    paths:
+      - khulnasoft_log/
+      - kdk_log/
+    expire_in: 2 days
+    when: always
+  timeout: 2h
+  allow_failure: true
+  parallel:
+    matrix:
+      - TOOL_VERSION_MANAGER:
+        - "mise"
+        - "asdf"
+
+##################
+# Shared scripts #
+##################
+
+.golang-upgrade-common-script: &golang-upgrade-common-script
+  - |
+    CURRENT_GO_VERSION=$(grep '^golang ' ${TOOL_VERSIONS_PATH} | awk '{print $2}')
+    echo "Current Go version: $CURRENT_GO_VERSION"
+    echo "Target Go version: $GO_VERSION"
+    if [ "$CURRENT_GO_VERSION" = "$GO_VERSION" ]; then
+      echo "Skipping job since the current Go version ($CURRENT_GO_VERSION) is the same as the target version ($GO_VERSION)."
+      exit 0
+    fi
+  - source support/ci/functions.sh
+  - init
+  - cd_into_checkout_path
+
+.golang-upgrade-script: &golang-upgrade-script
+  - sed -i "s/golang .*/golang ${GO_VERSION}/" $TOOL_VERSIONS_PATH
+  - cd ${UPDATE_PATH:-./}
+  - run_timed_command "KDK_SELF_UPDATE=0 kdk update"
+  - run_timed_command "go version"
+  - run_timed_command "kdk start"
+  - run_timed_command "test_url"
+
+###############################
+# Integration job definitions #
+###############################
+
+integration:start:
+  extends: .integration-base-job
+  script:
+    - run_timed_command "support/ci/verify-start"
+
+integration:vite:
+  extends: .integration-base-job
+  script:
+    - source support/ci/functions.sh
+    - init
+    - cd_into_checkout_path
+    - kdk config set webpack.enabled false
+    - kdk config set vite.enabled true
+    - run_timed_command "kdk reconfigure"
+    - run_timed_command "kdk start"
+    - run_timed_command "test_url"
+
+integration:update-from-khulnasoft:
+  extends: .integration-base-job
+  script:
+    - source support/ci/functions.sh
+    - init
+    - cd_into_checkout_path "khulnasoft"
+    - run_timed_command "KDK_SELF_UPDATE=0 kdk update"
+    - run_timed_command "kdk config list"
+    - run_timed_command "kdk reconfigure"
+    - run_timed_command "kdk start"
+    - run_timed_command "test_url"
+
+integration:golang-upgrade-from-khulnasoft:
+  extends: .integration-base-job
+  variables:
+    TOOL_VERSIONS_PATH: khulnasoft/workhorse/.tool-versions
+    UPDATE_PATH: khulnasoft/workhorse
+  script:
+    - *golang-upgrade-common-script
+    - *golang-upgrade-script

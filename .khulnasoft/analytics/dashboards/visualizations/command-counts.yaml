@@ -1,0 +1,34 @@
+version: 1
+type: DataTable
+data:
+  type: cube_analytics
+  query:
+    measures:
+      - TrackedEvents.count
+    dimensions:
+      - TrackedEvents.customEventName
+    order:
+      TrackedEvents.count: desc
+    filters:
+      - member: TrackedEvents.customEventName
+        operator: equals
+        values:
+          - Start install []
+          - Finish install []
+          - Failed install []
+          - Start update []
+          - Finish update []
+          - Failed update []
+          - Start start []
+          - Finish start []
+          - Failed start []
+          - Start stop []
+          - Finish stop []
+          - Failed stop []
+          - Start kill []
+          - Finish kill []
+          - Failed kill []
+          - Start setup-workspace []
+          - Finish setup-workspace []
+          - Failed setup-workspace []
+options: {}

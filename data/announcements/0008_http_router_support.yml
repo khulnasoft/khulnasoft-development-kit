@@ -1,0 +1,15 @@
+---
+header: KDK now uses HTTP router by default
+body: |
+  HTTP router is now available by default. To disable it, simply add the following lines to your kdk.yml file:
+  ```
+  khulnasoft_http_router:
+    enabled: false
+  ```
+
+  or run `kdk config set khulnasoft_http_router.enabled false`
+
+  After adding these lines, please run `kdk reconfigure` to apply the changes.
+
+  For more details, see
+  https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2102.

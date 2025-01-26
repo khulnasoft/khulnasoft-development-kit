@@ -1,0 +1,17 @@
+version: 1
+type: DataTable
+data:
+  type: cube_analytics
+  query:
+    measures:
+      - TrackedEvents.count
+    dimensions:
+      - TrackedEvents.userId
+    order:
+      TrackedEvents.count: desc
+    filters:
+      - member: TrackedEvents.customEventName
+        operator: equals
+        values:
+          - Finish start []
+options: {}

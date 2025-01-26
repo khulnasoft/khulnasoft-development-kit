@@ -1,0 +1,14 @@
+---
+header: Disabling Runner service by default
+body: |
+  The Runner service will now be disabled by default. To enable it, simply add the following lines to your kdk.yml file:
+  ```
+  runner:
+    enabled: true
+  ```
+
+  or run `kdk config set runner.enabled true`
+
+  After adding these lines, please run `kdk reconfigure` to apply the changes.
+
+  See https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/3076 for more details.

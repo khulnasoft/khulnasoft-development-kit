@@ -1,0 +1,4 @@
+# configuration for conditional include to make all jobs interruptible
+
+default:
+  interruptible: true

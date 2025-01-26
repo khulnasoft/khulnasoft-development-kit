@@ -1,0 +1,10 @@
+---
+header: Renaming nginx.listen to nginx.listen_address
+body: |
+  The config key `nginx.listen` was renamed to `nginx.listen_address` to be
+  consistent with other settings.
+
+  If you have configured a `nginx.listen` in your `kdk.yml`, please rename
+  `listen:` to `listen_address:`.
+
+  See <https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/4082> for more details.

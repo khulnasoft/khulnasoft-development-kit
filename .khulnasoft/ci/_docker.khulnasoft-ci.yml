@@ -1,0 +1,17 @@
+.docker:build-docker-in-docker:
+  image: docker:${DOCKER_VERSION}
+  services:
+    - docker:${DOCKER_VERSION}-dind
+  variables:
+    DOCKER_VERSION: "23.0.1"
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  tags:
+    # See https://khulnasoft.com/khulnasoft-com/www-khulnasoft-com/-/issues/7019 for tag descriptions
+    - khulnasoft-org-docker
+  before_script:
+    - !reference [.default-before_script, before_script]
+    - apk add --no-cache jq curl bash git
+    - ./support/docker ci-login
+  after_script:
+    - ./support/docker ci-logout

@@ -1,0 +1,14 @@
+---
+header: CellsPortManager consolidated with PortManager
+body: |
+  The `CellsPortManager` is merged into the existing `PortManager`.
+
+  In this process `port_offset` configuration setting is added and
+  `cells.port_offset` is **deprecated**. See
+  https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2309
+
+  To sync all cells please run:
+
+    ```shell
+    kdk cells up && kdk cells update
+    ```

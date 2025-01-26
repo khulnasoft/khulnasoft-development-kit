@@ -1,0 +1,19 @@
+name = "http-router"
+main = "src/index.ts"
+compatibility_date = "2024-12-05"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+send_metrics = false
+vars = { }
+
+[dev]
+ip = "<%= config.hostname %>"
+port = <%=  config.khulnasoft_http_router.use_distinct_port? ? config.khulnasoft_http_router.port : config.port %>
+
+[env.dev]
+name = "dev-cells-http-router"
+vars = { KHULNASOFT_PROXY_HOST = "<%= config.nginx? ? config.nginx.__listen_address : config.workhorse.__listen_address %>", KHULNASOFT_RULES_CONFIG = "<%= config.khulnasoft_http_router.khulnasoft_rules_config %>" }
+
+[env.pre]
+name = "pre-khulnasoft-com-cells-http-router"
+vars = { KHULNASOFT_PROXY_HOST = "", KHULNASOFT_RULES_CONFIG = "session_prefix" }

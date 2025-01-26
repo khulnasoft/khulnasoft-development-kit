@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../../lib/kdk'
+
+khulnasoft_docs_settings = KDK.config.khulnasoft_docs
+
+KDK::Output.abort('KhulnaSoft Docs not configured. See doc/howto/khulnasoft_docs.md') unless khulnasoft_docs_settings.enabled?
+
+KDK::Output.info('Compiling documentation with nanoc and starting preview..')
+puts KDK::Shellout.new(khulnasoft_docs_settings.__nanoc_view_cmd, chdir: 'khulnasoft-docs').stream

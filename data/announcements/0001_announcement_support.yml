@@ -1,0 +1,7 @@
+---
+header: Announcements support added
+body: |
+  Announcements can now be added under data/announcements as YAML files that
+  will be rendered to the user after a KDK install or update.
+
+  See https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/2879 for more details.

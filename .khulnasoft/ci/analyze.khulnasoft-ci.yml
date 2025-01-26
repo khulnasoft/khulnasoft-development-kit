@@ -1,0 +1,20 @@
+# Jobs that are generally only executable by CI
+#
+include:
+  - template: Security/Container-Scanning.khulnasoft-ci.yml
+  - template: Security/Dependency-Scanning.khulnasoft-ci.yml
+  - component: ${CI_SERVER_FQDN}/khulnasoft-org/components/danger-review/danger-review@1.4.1
+    inputs:
+      job_stage: "analyze"
+
+container_scanning:
+  stage: analyze
+  variables:
+    CS_IMAGE: $DEFAULT_BRANCH_IMAGE
+  needs:
+    - release-image
+  rules: !reference ['.rules:code-changes', rules]
+
+gemnasium-dependency_scanning:
+  stage: analyze
+  rules: !reference ['.rules:code-changes', rules]

@@ -1,0 +1,95 @@
+# Jobs that are generally executable locally (as well as within CI)
+#
+.test-job:
+  stage: test
+  needs: []
+
+.ruby-job:
+  image: "ruby:${RUBY_VERSION}"
+  before_script:
+    - gem install khulnasoft-sdk sentry-ruby zeitwerk tty-spinner
+  parallel:
+    matrix:
+      - RUBY_VERSION: ["3.2", "3.3"]
+
+docs-lint:
+  image: registry.khulnasoft.com/khulnasoft-org/khulnasoft-docs/lint-markdown:alpine-3.20-vale-3.9.3-markdownlint2-0.17.1-lychee-0.18.0
+  extends:
+    - .test-job
+    - .rules:docs-changes
+  script:
+    - make lint
+
+rubocop:
+  extends:
+    - .test-job
+    - .rules:code-changes
+    - .ruby-job
+  script:
+    - make rubocop
+
+rspec:
+  extends:
+    - .test-job
+    - .rules:code-changes
+    - .ruby-job
+  variables:
+    RSPEC_ARGS: "--format doc --format RspecJunitFormatter --out rspec.xml"
+  script:
+    - make rspec
+    - git diff --exit-code
+  artifacts:
+    paths:
+      - rspec.xml
+      - coverage/coverage.xml
+    reports:
+      junit: rspec.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/coverage.xml
+
+shellcheck:
+  extends:
+    - .test-job
+    - .rules:code-changes
+    - .ruby-job
+  script:
+    - apt-get update
+    - make shellcheck
+
+checkmake:
+  extends:
+    - .test-job
+    - .rules:code-changes
+  image:
+    name: golang:latest
+  script:
+    - go install github.com/mikefarah/yq/v4@latest
+    - CHECKMAKE_VERSION=$(yq '.dev.checkmake.version' < kdk.example.yml)
+    - go install "github.com/mrtazz/checkmake/cmd/checkmake@$CHECKMAKE_VERSION"
+    - cat Makefile support/makefiles/*.mk > tmp/.makefile_combined
+    - checkmake tmp/.makefile_combined && echo -e "\b\bOK"
+
+kdk-example-yml:
+  extends:
+    - .test-job
+    - .rules:code-changes
+    - .ruby-job
+  script:
+    - make verify-kdk-example-yml
+
+auto-generated:
+  extends:
+    - .test-job
+    - .rules:code-changes
+    - .ruby-job
+  script:
+    - support/ci/verify-auto-generated
+
+ruby-version:
+  extends:
+    - .test-job
+    - .rules:ruby-version-changes
+    - .ruby-job
+  script:
+    - support/ruby-check-versions

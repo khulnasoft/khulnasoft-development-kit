@@ -1,0 +1,14 @@
+---
+header: KDK now supports Topology Service
+body: |
+  Topology Service is now available. To enable it, simply add the following lines to your `kdk.yml` file:
+  ```
+  khulnasoft_topology_service:
+    enabled: true
+  ```
+
+  or run `kdk config set khulnasoft_topology_service.enabled true`
+
+  After adding these lines, please run `kdk reconfigure` to apply the changes.
+
+  For more details, see https://khulnasoft.com/khulnasoft-org/khulnasoft/-/issues/469084.

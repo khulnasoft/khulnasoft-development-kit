@@ -1,0 +1,9 @@
+---
+header: Vault support dropped
+body: |
+  As of October 4th, we've dropped support for Vault in KDK because of
+  HashCorp licensing changes and our move to the open source OpenBao.
+
+  If you are using Vault in KDK, please switch to OpenBao. See doc/howto/openbao.md.
+
+  For more details, see: <https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2231>

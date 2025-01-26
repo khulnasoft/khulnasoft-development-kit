@@ -1,0 +1,10 @@
+---
+header: KDK now supports error tracking and analytic data
+body: |
+  To improve KDK, KhulnaSoft would like to collect basic error and usage
+  data to see how KDK is used and how it is performing.
+
+  You can opt in to send error and analytic data to KhulnaSoft by running `kdk telemetry`.
+
+  For more details, see
+  https://khulnasoft.com/groups/khulnasoft-org/-/epics/9255.

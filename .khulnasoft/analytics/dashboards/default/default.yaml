@@ -1,0 +1,35 @@
+---
+title: Default
+description: KDK Metrics
+panels:
+  - visualization: command-counts
+    title: Command counts
+    gridAttributes:
+      yPos: 0
+      xPos: 0
+      width: 12
+      height: 6
+    options: {}
+  - visualization: command-details
+    title: Command details
+    gridAttributes:
+      yPos: 6
+      xPos: 0
+      width: 12
+      height: 6
+    options: {}
+  - visualization: starts-by-user
+    title: User starts
+    gridAttributes:
+      yPos: 12
+      xPos: 0
+      width: 12
+      height: 6
+    options: {}
+  - visualization: workspaces
+    title: Remote development
+    gridAttributes:
+      yPos: 18
+      xPos: 0
+      width: 12
+      height: 6

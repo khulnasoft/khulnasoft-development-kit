@@ -1,0 +1,14 @@
+---
+header: KhulnaSoft Topology Service is now enabled by default
+body: |
+  In order to prepare for Cells Phase 3 rollout, Topology Service is now enabled by default.
+  If you face any problems, you can disable it using
+
+  ```
+  kdk config set khulnasoft_topology_service.enabled false
+  kdk reconfigure
+  ```
+
+  For those who had enable it before, you might get errors in the browser due to this
+  issue: https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2266
+  Deleting the cookies for http://kdk.test in your browser should resolve the problem.

@@ -1,0 +1,68 @@
+.deploy-job:
+  stage: deploy
+
+yard:
+  extends:
+    - .deploy-job
+    - .rules:deploy-pages
+  image: "ruby:${RUBY_VERSION}"
+  script:
+    - bundle install
+    - bundle exec yardoc
+  cache:
+    key: "ruby-bundle"
+    paths:
+      - $BUNDLE_PATH
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - yard/*
+  parallel:
+    matrix:
+      - RUBY_VERSION: ['3.2', '3.3']
+
+pages:
+  extends:
+    - .deploy-job
+    - .rules:deploy-pages
+  needs:
+    - job: yard
+      artifacts: true
+    - job: update
+      artifacts: true
+  script:
+    - cp -r yard public
+    - mkdir -p public/kdk
+    - mv $KHULNASOFT_LAST_VERIFIED_SHA_PATH public/kdk || true
+  artifacts:
+    paths:
+      - public
+
+# promote `main` Gitpod image to `stable` using `crane tag`
+gitpod-workspace-image:
+  extends:
+    - .deploy-job
+    - .rules:deploy-image
+  needs:
+    - build-gitpod-workspace-image
+    - gitpod-docker-image
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  script:
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - crane tag $CI_REGISTRY_IMAGE/$GITPOD_WORKSPACE_IMAGE:stable old_stable
+    - crane tag $CI_REGISTRY_IMAGE/$GITPOD_WORKSPACE_IMAGE:main stable
+
+trigger-rollout-update-daemonset:
+  extends:
+    - .deploy-job
+    - .rules:deploy-image
+  needs:
+    - build-khulnasoft-remote-workspace-image
+  inherit:
+    variables: false  # Otherwise variables will be messed up
+  variables:
+    RUN_ROLLOUT_UPDATE_DAEMONSET: "true"
+  trigger:
+    project: 'khulnasoft-org/quality/engineering-productivity-infrastructure'

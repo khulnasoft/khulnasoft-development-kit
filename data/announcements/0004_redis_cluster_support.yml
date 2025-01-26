@@ -1,0 +1,14 @@
+---
+header: redis cluster support added
+body: |
+  Redis Cluster is now available. To enable it, simply add the following lines to your kdk.yml file:
+  ```
+  redis_cluster:
+    enabled: true
+  ```
+
+  or run `kdk config set redis_cluster.enabled true`
+
+  After adding these lines, please run `kdk reconfigure` to apply the changes.
+
+  See https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/2839 for more details.

@@ -1,0 +1,8 @@
+---
+header: New `kdk tail --help` information
+body: |
+  For information about how to use the `tail` command including a list of
+  services and shortcuts, run `kdk tail --help`.
+
+  For more details, see
+  https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/3228.

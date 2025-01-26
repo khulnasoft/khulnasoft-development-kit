@@ -1,0 +1,115 @@
+---
+stages:
+  - build
+  - test
+  - analyze
+  - pre-verify
+  - integration
+  - verify
+  - deploy
+  - cleanup
+
+.default_variables: &default_variables
+  CI_API_V4_URL: https://khulnasoft.com/api/v4
+  DEFAULT_IMAGE_WITHOUT_TAG: "${CI_REGISTRY_IMAGE}/${TOOL_VERSION_MANAGER}-bootstrapped-verify"
+  DEFAULT_BRANCH_IMAGE: "${DEFAULT_IMAGE_WITHOUT_TAG}:${CI_COMMIT_REF_SLUG}"
+  DEFAULT_MAIN_IMAGE: "${DEFAULT_IMAGE_WITHOUT_TAG}:main"
+  VERIFY_IMAGE_MAIN: "${CI_REGISTRY_IMAGE}/${TOOL_VERSION_MANAGER}-bootstrapped-kdk-installed:main"
+  VERIFY_IMAGE: "${CI_REGISTRY_IMAGE}/${TOOL_VERSION_MANAGER}-bootstrapped-kdk-installed:${CI_COMMIT_REF_SLUG}"
+  INTEGRATION_IMAGE: "${CI_REGISTRY_IMAGE}/${TOOL_VERSION_MANAGER}-ci-integration:${CI_COMMIT_REF_SLUG}"
+  KHULNASOFT_CI_CACHE_DIR: .khulnasoft-ci-cache
+  KHULNASOFT_CI_CACHE_FULL_DIR: $CI_PROJECT_DIR/$KHULNASOFT_CI_CACHE_DIR
+  KHULNASOFT_CI_CACHE_FULL_GO_DIR: $KHULNASOFT_CI_CACHE_FULL_DIR/go
+  KHULNASOFT_CI_CACHE_GO_DIR: $KHULNASOFT_CI_CACHE_DIR/go
+  KHULNASOFT_REMOTE_WORKSPACE_IMAGE: khulnasoft-remote-workspace
+  GITPOD_WORKSPACE_IMAGE: gitpod-workspace
+  KDK_INTERNAL_CACHE_FULL_DIR: /home/kdk/$KHULNASOFT_CI_CACHE_DIR
+  KDK_INTERNAL_CACHE_RUBY_FULL_DIR: $KDK_INTERNAL_CACHE_FULL_DIR/ruby
+  KDK_INTERNAL_CACHE_GO_FULL_DIR: $KDK_INTERNAL_CACHE_FULL_DIR/go
+  BUNDLE_PATH: "vendor/bundle"
+  BUNDLE_FROZEN: "true"
+  BUNDLE_JOBS: "$(nproc)"
+  ENABLE_BOOTSNAP: "false"
+  PUMA_SINGLE_MODE: "true"
+  KDK_DEBUG: "true"
+  NOKOGIRI_LIBXML_MEMORY_MANAGEMENT: "default"
+  KHULNASOFT_LAST_VERIFIED_SHA_PATH: khulnasoft-last-verified-sha.json
+  REGISTRY_HOST: "registry.khulnasoft.com"
+  REGISTRY_GROUP: "khulnasoft-org"
+  RUBY_VERSION: "3.2"
+  FF_TIMESTAMPS: true
+  FF_USE_INIT_WITH_DOCKER_EXECUTOR: true
+  TOOL_VERSION_MANAGER: "asdf"
+  RUBYOPT: "--yjit"
+
+variables:
+  <<: *default_variables
+
+default:
+  timeout: 3h
+  image: ${DEFAULT_BRANCH_IMAGE}
+  tags:
+    - khulnasoft-org
+
+.default-before_script:
+  before_script:
+    - sysctl -n -w fs.inotify.max_user_watches=524288 || true
+    - |
+      if [ -f support/ci/utils.sh ]; then
+        . support/ci/utils.sh;
+        display_debugging || true;
+      else
+        true;
+      fi
+
+.default-after_script:
+  after_script:
+    # In `after_script`, the working directory always starts at `CI_PROJECT_DIR`.
+    - mkdir -p khulnasoft_log kdk_log
+    - mv /home/kdk/kdk/khulnasoft/log/*.log khulnasoft_log/
+    - mv /home/kdk/kdk/log/ kdk_log/
+
+.cached_variables: &cached_variables
+  BUNDLE_PATH: $KDK_INTERNAL_CACHE_RUBY_FULL_DIR/bundle
+  GEM_HOME: $KDK_INTERNAL_CACHE_RUBY_FULL_DIR/gem
+  GEM_PATH: $KDK_INTERNAL_CACHE_RUBY_FULL_DIR/gem
+  GOCACHE: $KDK_INTERNAL_CACHE_GO_FULL_DIR/build
+  GOMODCACHE: $KDK_INTERNAL_CACHE_GO_FULL_DIR/mod
+  NODE_PATH: $KDK_INTERNAL_CACHE_FULL_DIR/nodejs
+
+.verify-job-cached_variables:
+  variables:
+    <<: *default_variables
+    <<: *cached_variables
+
+.cached-job:
+  variables:
+    <<: *default_variables
+    <<: *cached_variables
+  # (Temporarily) disabling the cache.
+  # See https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/1886 for more details.
+  #
+  # cache:
+  #   - key:
+  #       files:
+  #         - '.tool-versions'
+  #     paths:
+  #       - "$KHULNASOFT_CI_CACHE_DIR"
+  #     policy: pull-push
+
+include:
+  - template: Workflows/MergeRequest-Pipelines.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/_rules.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/_docker.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/_interruptible.yml
+    rules:
+      - if: '$CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH && $CI_COMMIT_TAG == null'
+  - local: '.khulnasoft/ci/_versions.khulnasoft-ci.yml'
+  - local: .khulnasoft/ci/build.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/test.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/analyze.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/pre-verify.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/integration.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/verify.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/deploy.khulnasoft-ci.yml
+  - local: .khulnasoft/ci/compile.khulnasoft-ci.yml

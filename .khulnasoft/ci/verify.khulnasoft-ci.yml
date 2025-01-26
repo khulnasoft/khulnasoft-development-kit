@@ -1,0 +1,113 @@
+# Jobs that are generally only executable by CI and not locally.
+#
+.verify-base-job:
+  extends:
+    - .verify-job-cached_variables
+    - .rules:code-changes-verify
+  image: ${VERIFY_IMAGE}
+  stage: verify
+  needs:
+    - build-verify-image
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - cd /home/kdk/kdk
+    - !reference [.default-before_script, before_script]
+  after_script:
+    - !reference [.default-after_script, after_script]
+  tags:
+    - khulnasoft-org-docker
+  artifacts:
+    paths:
+      - khulnasoft_log/
+      - kdk_log/
+    expire_in: 2 days
+    when: always
+  timeout: 2h
+  parallel:
+    matrix:
+      - TOOL_VERSION_MANAGER:
+        - "mise"
+        - "asdf"
+
+start:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "support/ci/verify-start"
+
+doctor:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "support/ci/verify-doctor"
+
+debug-info:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "bin/kdk debug-info"
+
+reconfigure:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "support/ci/verify-reconfigure"
+
+reset-data:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "support/ci/verify-reset-data"
+
+pristine:
+  extends: .verify-base-job
+  script:
+    - run_timed_command "support/ci/verify-pristine"
+
+update:
+  extends: .verify-base-job
+  tags:
+    - saas-linux-large-amd64
+  script:
+    - run_timed_command "support/ci/verify-update"
+  after_script:
+    - !reference [.verify-base-job, after_script]
+    - mv /home/kdk/kdk/$KHULNASOFT_LAST_VERIFIED_SHA_PATH $KHULNASOFT_LAST_VERIFIED_SHA_PATH
+  artifacts:
+    paths:
+      - khulnasoft_log/
+      - kdk_log/
+      - $KHULNASOFT_LAST_VERIFIED_SHA_PATH
+    expire_in: 2 days
+    when: always
+
+gitpod-docker-image:
+  extends:
+    - .docker:build-docker-in-docker
+    - .rules:gitpod-code-changes
+  stage: verify
+  needs:
+    - build-gitpod-workspace-image
+  script:
+    - run_timed_command "support/ci/verify-gitpod-docker-image"
+  artifacts:
+    paths:
+      - ./artifacts/log/*
+    expire_in: 2 days
+  timeout: 1h
+
+geo-install:
+  extends:
+    - .verify-base-job
+    - .rules:geo-install
+  tags:
+    - saas-linux-large-amd64
+  script:
+    - run_timed_command "support/ci/verify-geo"
+  after_script:
+    - mkdir -p $CI_PROJECT_DIR/khulnasoft2_log $CI_PROJECT_DIR/kdk2_log
+    - cp -rf /home/kdk/kdk2/khulnasoft/log/*.log $CI_PROJECT_DIR/khulnasoft2_log/
+    - cp -rf /home/kdk/kdk2/log/ $CI_PROJECT_DIR/kdk2_log/
+  artifacts:
+    paths:
+      - ./khulnasoft2_log
+      - ./kdk2_log
+    expire_in: 2 days
+    when: always
+  allow_failure: true

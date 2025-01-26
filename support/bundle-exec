@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CDPATH=''
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")/.." || exit ; pwd -P)"
+
+ASDF_AVAILABLE=$("${ROOT_PATH}/support/asdf-available")
+ASDF_RUBY_VERSION="$(grep -E '^ruby ' "${ROOT_PATH}/.tool-versions" | awk '{ print $2 }')"
+
+# shellcheck disable=SC1091 disable=SC1090
+test -f "${ROOT_PATH}/env.runit" && . "${ROOT_PATH}/env.runit"
+
+prepare_command() {
+  local command="${1}"
+
+  [[ "${ASDF_AVAILABLE}" == "true" ]] && command="asdf exec ${command}"
+  [[ -n "${ASDF_RUBY_VERSION}" ]] && command="ASDF_RUBY_VERSION=${ASDF_RUBY_VERSION} ${command}"
+
+  echo "${command}"
+}
+
+bundle_exec() {
+  local command="bundle exec ${1}"
+
+  command=$(prepare_command "${command}")
+
+  eval "${command}"
+}
+
+bundle_exec "${*}"

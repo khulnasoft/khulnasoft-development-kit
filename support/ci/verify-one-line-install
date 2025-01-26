@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ -n "${CI_MERGE_REQUEST_SOURCE_BRANCH_SHA}" ]; then
+  sha="${CI_MERGE_REQUEST_SOURCE_BRANCH_SHA}"
+else
+  sha="${CI_COMMIT_SHA}"
+fi
+
+curl --fail "${CI_MERGE_REQUEST_SOURCE_PROJECT_URL:-${CI_PROJECT_URL}}/-/raw/${sha}/support/install" | bash -s - kdk "${sha}" "."

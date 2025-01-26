@@ -1,0 +1,9 @@
+---
+header: Global environment variables can be set in kdk.yml
+body: |
+  The settings `env` are added to the global KDK settings. User can now add
+  environment variables to their `kdk.yml`. These variables will be injected in
+  the environment of every process started by KDK.
+
+  For more details, see
+  <https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/4206>.

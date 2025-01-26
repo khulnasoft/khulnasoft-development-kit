@@ -1,0 +1,37 @@
+<%- if config.khulnasoft.topology_service.enabled -%>
+[[cells]]
+id = <%= config.khulnasoft.cell.id %>
+name = "<%= config.khulnasoft.cell.name %>"
+address = "<%= config.nginx? ? config.nginx.__listen_address : config.workhorse.__listen_address %>"
+session_prefix = "<%= config.khulnasoft.rails.session_store.session_cookie_token_prefix %>"
+sequence_range = [1, <%= config.cells.global_sequence_range %>]
+<%- end -%>
+
+<%- cell_manager = CellManager.new -%>
+<%- config.cells.instances.elems.each do |instance| -%>
+<%- cell_config = cell_manager.get_config_for(instance.fetch('name')) -%>
+[[cells]]
+id = <%= instance.id %>
+name = "<%= instance.name %>"
+address = "<%= cell_config.nginx? ? cell_config.nginx.__listen_address : cell_config.workhorse.__listen_address %>"
+session_prefix = "<%= cell_config.khulnasoft.rails.session_store.session_cookie_token_prefix %>"
+sequence_range = [<%= instance.sequence_range[0] %>, <%= instance.sequence_range[1] %>]
+
+<%- end -%>
+[[serve]]
+address = ":<%= config.khulnasoft_topology_service.grpc_port %>"
+features = ["*_grpc"]
+
+[[serve]]
+address = ":<%= config.khulnasoft_topology_service.rest_port %>"
+features = ["*_rest"]
+
+[[services.classify.response_headers]]
+key = "Cache-Control"
+value = "s-maxage=10"
+raw_header = true
+
+[[services.classify.response_headers]]
+key = "Cache-Tag"
+value = "gprd_topology_service_khulnasoft_com"
+raw_header = true

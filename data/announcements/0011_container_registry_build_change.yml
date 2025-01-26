@@ -1,0 +1,8 @@
+---
+header: Container registry now built from source and runs as a local service
+body: |
+  The container registry will now be built from source and run as a local service, instead of being run via a Docker container. This change improves the registry's access to other KDK services like PostgreSQL and Redis, which were previously harder to connect due to the Docker-based setup.
+
+  No additional configuration is needed to benefit from this change.
+
+  For more details, see https://github.com/khulnasoft/khulnasoft-development-kit/-/merge_requests/4059.
