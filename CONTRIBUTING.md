@@ -7,8 +7,6 @@ distributed by KhulnaSoft Inc., You reserve all right, title, and interest in an
 Your Contributions. All Contributions are subject to the following DCO + License
 terms.
 
-[DCO + License](https://khulnasoft.com/khulnasoft-org/dco/blob/master/README.md)
-
 All Documentation content that resides under the [doc/ directory](/doc) of this
 repository is licensed under Creative Commons:
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).

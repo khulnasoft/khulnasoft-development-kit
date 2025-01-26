@@ -1,0 +1,7 @@
+inherit_gem:
+  khulnasoft-styles:
+    - rubocop-default.yml
+
+# Add new cops by default for testing purposes
+AllCops:
+  NewCops: enable

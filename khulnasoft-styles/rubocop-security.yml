@@ -1,0 +1,72 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Checks for implementations of the hash method which combine values using
+# custom logic instead of delegating to Array#hash.
+Security/CompoundHash:
+  Enabled: true
+
+# This cop checks for the use of JSON class methods which have potential
+# security issues.
+Security/JSONLoad:
+  Enabled: true
+
+# This cop checks for the use of *Kernel#eval*.
+Security/Eval:
+  Enabled: true
+
+# Checks for the first argument to IO.read, IO.binread, IO.write, IO.binwrite, IO.foreach, and IO.readlines
+Security/IoMethods:
+  Enabled: true
+
+KhulnasoftSecurity/DeepMunge:
+  Description: Checks for disabling the deep munge security control.
+  Enabled: true
+  StyleGuide: https://www.rubydoc.info/gems/khulnasoft-styles/RuboCop/Cop/KhulnasoftSecurity/DeepMunge
+  Exclude:
+    - 'lib/**/*.rake'
+    - 'spec/**/*'
+
+# To be enabled by https://khulnasoft.com/khulnasoft-org/khulnasoft-ce/merge_requests/13610
+KhulnasoftSecurity/JsonSerialization:
+  Description: Checks for `to_json` / `as_json` without allowing via `only`.
+  Enabled: false
+  StyleGuide: https://www.rubydoc.info/gems/khulnasoft-styles/RuboCop/Cop/KhulnasoftSecurity/JsonSerialization
+
+KhulnasoftSecurity/PublicSend:
+  Description: Checks for the use of `public_send`, `send`, and `__send__` methods.
+  Enabled: true
+  StyleGuide: https://www.rubydoc.info/gems/khulnasoft-styles/RuboCop/Cop/KhulnasoftSecurity/PublicSend
+  Exclude:
+    - 'config/**/*'
+    - 'db/**/*'
+    - 'features/**/*'
+    - 'lib/**/*.rake'
+    - 'qa/**/*'
+    - 'spec/**/*'
+
+KhulnasoftSecurity/SendFileParams:
+  Description: Check for passing of params hash to send_file()
+  Enabled: true
+
+KhulnasoftSecurity/RedirectToParamsUpdate:
+  Description: Check for use of redirect_to(params.update())
+  Enabled: true
+  Exclude:
+    - 'lib/**/*.rake'
+    - 'spec/**/*'
+
+KhulnasoftSecurity/SqlInjection:
+  Description: Check for SQL Injection in where()
+  Enabled: true
+  Exclude:
+    - 'lib/**/*.rake'
+    - 'spec/**/*'
+
+KhulnasoftSecurity/SystemCommandInjection:
+  Description: Check for Command Injection in System()
+  Enabled: true
+  Exclude:
+    - 'lib/**/*.rake'
+    - 'spec/**/*'

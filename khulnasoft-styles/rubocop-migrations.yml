@@ -1,0 +1,25 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Checks for methods that may lead to batch type issues on a table that's been
+# explicitly denied because of its size.
+#
+# Even though these methods perform functions to avoid
+# downtime, using it with tables with millions of rows still causes a
+# significant delay in the deploy process and is best avoided.
+#
+# See https://khulnasoft.com/khulnasoft-com/infrastructure/issues/1602 for more
+# information.
+# The default can be changed as follows:
+#     Migration/UpdateLargeTable:
+#       DeniedTables:
+#         - :usage_data
+#         - :version_checks
+#       DeniedMethods:
+#         - :add_column_with_default
+#         - :change_column_type_concurrently
+#         - :rename_column_concurrently
+#         - :update_column_in_batches
+Migration/UpdateLargeTable:
+  Enabled: false

@@ -1,0 +1,503 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Checks for grouping of accessors in class and module bodies.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleaccessorgrouping
+Style/AccessorGrouping:
+  Enabled: true
+
+# Use alias_method instead of alias.
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+  Enabled: true
+
+# Whether `and` and `or` are banned only in conditionals (conditionals)
+# or completely (always).
+Style/AndOr:
+  Enabled: true
+  EnforcedStyle: always
+
+# This cop enforces the use of Array() instead of explicit Array check or [*var]
+# It must remain disabled because of safety concern on Array().
+# A false positive may occur depending on how the argument is handled by Array()
+# (which can be different than just wrapping the argument in an array)
+# As of Rubocop 1.0, this cop has been disabled by default.
+# https://docs.rubocop.org/rubocop/1.44/cops_style.html#safety-3
+Style/ArrayCoercion:
+  Enabled: false
+
+# Use `Array#join` instead of `Array#*`.
+Style/ArrayJoin:
+  Enabled: true
+
+# Use only ascii symbols in comments.
+Style/AsciiComments:
+  Enabled: true
+
+# Checks for uses of Module#attr.
+Style/Attr:
+  Enabled: true
+
+# Avoid the use of BEGIN blocks.
+Style/BeginBlock:
+  Enabled: true
+
+# Checks for places where attr_reader and attr_writer for the same method can be combined into single attr_accessor.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylebisectedattraccessor
+Style/BisectedAttrAccessor:
+  Enabled: true
+
+# Do not use block comments.
+Style/BlockComments:
+  Enabled: true
+
+# Avoid using {...} for multi-line blocks (multi-line chaining is always ugly).
+# Prefer {...} over do...end for single-line blocks.
+Style/BlockDelimiters:
+  Enabled: true
+  # Do flag `it {` in multi-line blocks. Off by default.
+  AllowedMethods:
+    - proc
+    - lambda
+
+# Checks for uses of the case equality operator(===).
+Style/CaseEquality:
+  Enabled: false
+
+# Identifies places where if-elsif constructions can be replaced with case-when.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylecaselikeif
+Style/CaseLikeIf:
+  Enabled: true
+
+# Checks for uses of character literals.
+Style/CharacterLiteral:
+  Enabled: true
+
+# Checks style of children classes and modules.
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# Enforces consistent use of `Object#is_a?` or `Object#kind_of?`.
+Style/ClassCheck:
+  Enabled: true
+
+# Use self when defining module/class methods.
+Style/ClassMethods:
+  Enabled: true
+
+# Avoid the use of class variables.
+Style/ClassVars:
+  Enabled: true
+
+# This cop checks for methods invoked via the :: operator instead
+# of the . operator (like FileUtils::rmdir instead of FileUtils.rmdir).
+Style/ColonMethodCall:
+  Enabled: true
+
+Style/CombinableLoops: # (new in 0.90)
+  Enabled: true
+
+# This cop checks that comment annotation keywords are written according
+# to guidelines.
+Style/CommentAnnotation:
+  Enabled: false
+
+# Check for `if` and `case` statements where each branch is used for
+# assignment to the same variable when using the return of the
+# condition can be used instead.
+Style/ConditionalAssignment:
+  Enabled: true
+
+# Use def with parentheses when there are arguments.
+Style/DefWithParentheses:
+  Enabled: true
+
+# Document classes and non-namespace modules.
+Style/Documentation:
+  Enabled: false
+
+# This cop checks for uses of double negation (!!) to convert something
+# to a boolean value. As this is both cryptic and usually redundant, it
+# should be avoided.
+Style/DoubleNegation:
+  Enabled: false
+
+# Avoid the use of END blocks.
+Style/EndBlock:
+  Enabled: true
+
+# Favor the use of Fixnum#even? && Fixnum#odd?
+Style/EvenOdd:
+  Enabled: true
+
+# Reason: Using `yield` is ~20% faster than `&block`.
+# See https://khulnasoft.com/khulnasoft-org/khulnasoft/-/merge_requests/94090#note_1452639709
+Style/ExplicitBlockArgument:
+  Enabled: false
+
+# Enforces consistency when using exponential notation for numbers in the code
+Style/ExponentialNotation:
+  Enabled: true
+
+# Checks use of for or each in multiline loops.
+Style/For:
+  Enabled: true
+
+# Use a consistent style for format string tokens.
+Style/FormatStringToken:
+  Enabled: false
+
+# Checks if there is a magic comment to enforce string literals
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+# Enforces the use of $stdout/$stderr/$stdin instead of STDOUT/STDERR/STDIN. STDOUT/STDERR/STDIN are constants,
+# and while you can actually reassign (possibly to redirect some stream) constants in Ruby,
+# you’ll get an interpreter warning if you do so.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleglobalstdstream
+Style/GlobalStdStream:
+  Enabled: true
+
+# Do not introduce global variables.
+Style/GlobalVars:
+  Enabled: true
+  Exclude:
+    - 'lib/backup/**/*'
+    - 'lib/tasks/**/*'
+
+# Checks for presence or absence of braces around hash literal as a last array item depending on configuration.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylehashaslastarrayitem
+Style/HashAsLastArrayItem:
+  Enabled: true
+
+# Checks for uses of each_key and each_value Hash methods.
+Style/HashEachMethods:
+  Enabled: true
+
+# Checks for places where case-when represents a simple 1:1 mapping and can be replaced with a hash lookup.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylehashlikecase
+Style/HashLikeCase:
+  Enabled: false
+
+# Prefer Ruby 1.9 hash syntax `{ a: 1, b: 2 }`
+# over 1.8 syntax `{ :a => 1, :b => 2 }`.
+Style/HashSyntax:
+  Enabled: true
+  EnforcedShorthandSyntax: either_consistent
+
+# looks for uses of _.each_with_object({}) {...}, _.map {...}.to_h, and Hash[_.map {...}]
+# that are actually just transforming the keys of a hash, and tries to use a simpler & faster
+# call to transform_keys instead.
+Style/HashTransformKeys:
+  Enabled: true
+
+# looks for uses of _.each_with_object({}) {...}, _.map {...}.to_h, and Hash[_.map {...}]
+# that are actually just transforming the values of a hash, and tries to use a simpler & faster
+# call to transform_values instead.
+Style/HashTransformValues:
+  Enabled: true
+
+
+# This cop identifies places where `map { ... }.to_h` or
+# `Hash[map { ... }]` can be replaced with `to_h { ... }`,
+# saving an intermediate array allocation.
+Style/HashTransformation:
+  Enabled: true
+
+# Checks that conditional statements do not have an identical line at the
+# end of each branch, which can validly be moved out of the conditional.
+Style/IdenticalConditionalBranches:
+  Enabled: true
+
+# Do not use if x; .... Use the ternary operator instead.
+Style/IfWithSemicolon:
+  Enabled: true
+
+# Use Kernel#loop for infinite loops.
+Style/InfiniteLoop:
+  Enabled: true
+
+# Use the inverse method instead of `!.method`
+# if an inverse method is defined.
+Style/InverseMethods:
+  Enabled: false
+
+# Use iso8601 date format via specific function instead of strftime
+Style/Iso8601Date:
+  Enabled: true
+
+Style/KeywordParametersOrder: # (new in 0.90)
+  Enabled: true
+
+# Use lambda.call(...) instead of lambda.(...).
+Style/LambdaCall:
+  Enabled: true
+
+# Checks for places where keyword arguments can be used instead of boolean arguments when defining methods.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleoptionalbooleanparameter
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+# Use `strip` instead of `lstrip.rstrip`.
+Style/Strip:
+  Enabled: true
+
+# Checks for usages of each with <<, push, or append which can be replaced by map.
+Style/MapIntoArray:
+  Enabled: true
+
+# Checks if the method definitions have or don't have parentheses.
+Style/MethodDefParentheses:
+  Enabled: true
+
+# Checks for usage of `extend self` in modules.
+Style/ModuleFunction:
+  Enabled: false
+
+# Avoid multi-line chains of blocks.
+Style/MultilineBlockChain:
+  Enabled: true
+
+# Do not use then for multi-line if/unless.
+Style/MultilineIfThen:
+  Enabled: true
+
+# Avoid multi-line `? :` (the ternary operator), use if/unless instead.
+Style/MultilineTernaryOperator:
+  Enabled: true
+
+# Avoid comparing a variable with multiple items in a conditional,
+# use Array#include? instead.
+Style/MultipleComparison:
+  Enabled: false
+
+# This cop checks whether some constant value isn't a
+# mutable literal (e.g. array or hash).
+Style/MutableConstant:
+  Enabled: true
+  Exclude:
+    - 'db/migrate/**/*'
+    - 'db/post_migrate/**/*'
+    - 'db/geo/migrate/**/*'
+
+# Favor unless over if for negative conditions (or control flow or).
+Style/NegatedIf:
+  Enabled: true
+
+# Avoid using nested modifiers.
+Style/NestedModifier:
+  Enabled: true
+
+# Use one expression per branch in a ternary operator.
+Style/NestedTernaryOperator:
+  Enabled: true
+
+# Prefer x.nil? to x == nil.
+Style/NilComparison:
+  Enabled: true
+
+# Checks for redundant nil checks.
+Style/NonNilCheck:
+  Enabled: true
+
+# Use ! instead of not.
+Style/Not:
+  Enabled: true
+
+# Checks for numbered parameters. It can either restrict the use of numbered
+# parameters to single-lined blocks, or disallow completely numbered
+# parameters.
+Style/NumberedParameters:
+  EnforcedStyle: disallow
+  Enabled: true
+
+# Detects use of an excessive amount of numbered parameters in a single block.
+Style/NumberedParametersLimit:
+  Enabled: false
+
+# Add underscores to large numeric literals to improve their readability.
+Style/NumericLiterals:
+  Enabled: false
+
+
+# Enforces the use Object#then instead of Object#yield_self.
+Style/ObjectThen:
+  Enabled: true
+
+# Favor the ternary operator(?:) over if/then/else/end constructs.
+Style/OneLineConditional:
+  Enabled: true
+
+# Do not use OpenStruct.
+Style/OpenStructUse:
+  Enabled: true
+
+# Don't use parentheses around the condition of an if/unless/while.
+Style/ParenthesesAroundCondition:
+  Enabled: true
+
+# This cop (by default) checks for uses of methods Hash#has_key? and
+# Hash#has_value? where it enforces Hash#key? and Hash#value?
+# It is configurable to enforce the inverse, using `verbose` method
+# names also.
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+# SupportedStyles: short, verbose
+Style/PreferredHashMethods:
+  Enabled: false
+
+# Checks for %W when interpolation is not needed.
+Style/RedundantCapitalW:
+  Enabled: true
+
+# Checks for redundant assignment before returning.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleredundantassignment
+Style/RedundantAssignment:
+  Enabled: true
+
+# Checks for an obsolete RuntimeException argument in raise/fail.
+Style/RedundantException:
+  Enabled: true
+
+# Identifies places where fetch(key) { value } can be replaced by fetch(key, value).
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleredundantfetchblock
+Style/RedundantFetchBlock:
+  Enabled: true
+
+# Checks for the presence of superfluous .rb extension in the filename provided to require and require_relative.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleredundantfileextensioninrequire
+Style/RedundantFileExtensionInRequire:
+  Enabled: true
+
+# Before Ruby 3.0, interpolated strings followed the frozen string literal magic comment which sometimes made it
+# necessary to explicitly unfreeze them. Ruby 3.0 changed interpolated strings to always be unfrozen which makes
+# unfreezing them redundant.
+Style/RedundantInterpolationUnfreeze:
+  Enabled: true
+
+# Checks for parentheses that seem not to serve any purpose.
+Style/RedundantParentheses:
+  Enabled: true
+
+# Checks for %q/%Q when single quotes or double quotes would do.
+Style/RedundantPercentQ:
+  Enabled: false
+
+# Checks for unnecessary single-element Regexp character classes.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleredundantregexpcharacterclass
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+# Checks for redundant escapes inside Regexp literals.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleredundantregexpescape
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/RedundantSelfAssignment: # (new in 0.90)
+  Enabled: true
+
+# Use `sort` instead of `sort_by { |x| x }`.
+Style/RedundantSortBy:
+  Enabled: true
+
+# Don't use semicolons to terminate expressions.
+Style/Semicolon:
+  Enabled: true
+
+# Detects the use of the public_send method with a literal method name argument.
+Style/SendWithLiteralMethodName:
+  Enabled: true
+
+# Sometimes using dig method ends up with just a single argument. In such cases, dig should be replaced with [].
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylesingleargumentdig
+Style/SingleArgumentDig:
+  Enabled: true
+
+# Checks for proper usage of fail and raise.
+Style/SignalException:
+  EnforcedStyle: only_raise
+  Enabled: true
+
+# Checks that arrays are sliced with endless ranges instead of ary[start..-1] on Ruby 2.6+.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#styleslicingwithrange
+Style/SlicingWithRange:
+  Enabled: true
+
+Style/SoleNestedConditional: # (new in 0.89)
+  Enabled: true
+
+# Check for the usage of parentheses around stabby lambda arguments.
+Style/StabbyLambdaParentheses:
+  EnforcedStyle: require_parentheses
+  Enabled: true
+
+# Checks for places where string concatenation can be replaced with string interpolation.
+# https://docs.rubocop.org/rubocop/0.89/cops_style.html#stylestringconcatenation
+Style/StringConcatenation:
+  Enabled: true
+
+# Checks if uses of quotes match the configured preference.
+Style/StringLiterals:
+  Enabled: false
+
+# Checks if configured preferred methods are used over non-preferred.
+Style/StringMethods:
+  PreferredMethods:
+    intern: to_sym
+  Enabled: true
+
+# Checks for redundant argument forwarding when calling super with arguments identical to
+# the method definition.
+Style/SuperArguments:
+  Enabled: true
+
+# Use %i or %I for arrays of symbols.
+Style/SymbolArray:
+  Enabled: false
+
+# This cop checks for trailing comma in array literals.
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: no_comma
+
+# This cop checks for trailing comma in hash literals.
+Style/TrailingCommaInHashLiteral:
+  Enabled: true
+  EnforcedStyleForMultiline: no_comma
+
+# This cop checks for trailing comma in argument lists.
+Style/TrailingCommaInArguments:
+  Enabled: true
+  EnforcedStyleForMultiline: no_comma
+
+# Don't interpolate global, instance and class variables directly in strings.
+Style/VariableInterpolation:
+  Enabled: true
+
+# Use when x then ... for one-line cases.
+Style/WhenThen:
+  Enabled: true
+
+# Checks for redundant do after while or until.
+Style/WhileUntilDo:
+  Enabled: true
+
+# Favor modifier while/until usage when you have a single-line body.
+Style/WhileUntilModifier:
+  Enabled: true
+
+# Use %w or %W for arrays of words.
+Style/WordArray:
+  Enabled: true
+
+# Do not use literals as the first operand of a comparison.
+Style/YodaCondition:
+  Enabled: false
+
+# Use `proc` instead of `Proc.new`.
+Style/Proc:
+  Enabled: true
+
+# Prefer `var, _ = call` over `var, = call`
+Style/TrailingUnderscoreVariable:
+  Enabled: false

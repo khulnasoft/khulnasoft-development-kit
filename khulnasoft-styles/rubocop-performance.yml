@@ -1,0 +1,153 @@
+---
+require:
+  - rubocop-performance
+  - ./lib/khulnasoft/styles/rubocop
+
+# Used to identify usages of ancestors.include? and change them to use ⇐ instead.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performanceancestorsinclude
+Performance/AncestorsInclude:
+  Enabled: true
+
+# Identifies places where numeric argument to BigDecimal should be converted to string.
+# Initializing from String is faster than from Numeric for BigDecimal.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancebigdecimalwithnumericargument
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/BlockGivenWithExplicitBlock: # (new in 1.9)
+  Enabled: true
+
+# Use `caller(n..n)` instead of `caller`.
+Performance/Caller:
+  Enabled: false
+
+# Use `casecmp` rather than `downcase ==`.
+Performance/Casecmp:
+  Enabled: true
+
+Performance/CollectionLiteralInLoop: # (new in 1.8)
+  Enabled: true
+
+# Identifies places where Concurrent.monotonic_time can be replaced by
+# Process.clock_gettime(Process::CLOCK_MONOTONIC).
+Performance/ConcurrentMonotonicTime:
+  Enabled: true
+
+Performance/ConstantRegexp: # (new in 1.9)
+  Enabled: true
+
+# Use `str.{start,end}_with?(x, ..., y, ...)` instead of
+# `str.{start,end}_with?(x, ...) || str.{start,end}_with?(y, ...)`.
+Performance/DoubleStartEndWith:
+  Enabled: true
+
+# Identifies usages of map { ... }.flatten and change them to use
+# flat_map { ... } instead.
+Performance/FlatMap:
+  Enabled: true
+  EnabledForFlattenWithoutParams: true
+
+# This cop identifies places where map { …​ }.compact can be replaced by
+# filter_map.
+Performance/MapCompact:
+  Enabled: true
+
+Performance/MethodObjectAsBlock: # (new in 1.9)
+  Enabled: true
+
+# Superseded by Style/OpenStructUse
+Performance/OpenStruct:
+  Enabled: false
+
+# Use `Range#cover?` instead of `Range#include?`.
+Performance/RangeInclude:
+  Enabled: true
+
+# This cop identifies the use of a `&block` parameter and `block.call`
+# where `yield` would do just as well.
+Performance/RedundantBlockCall:
+  Enabled: true
+
+# Checks for uses Enumerable#all?, Enumerable#any?, Enumerable#one?, and
+# Enumerable#none? are compared with === or similar methods in block.
+Performance/RedundantEqualityComparisonBlock:
+  Enabled: true
+
+# This cop identifies use of `Regexp#match` or `String#match in a context
+# where the integral return value of `=~` would do just as well.
+Performance/RedundantMatch:
+  Enabled: true
+
+# This cop identifies places where `Hash#merge!` can be replaced by
+# `Hash#[]=`.
+Performance/RedundantMerge:
+  Enabled: true
+  MaxKeyValuePairs: 1
+
+# Identifies places where sort { |a, b| a <=> b } can be replaced with sort.
+# https://docs.rubocop.org/rubocop-performance/1.7/cops_performance.html#performanceredundantsortblock
+Performance/RedundantSortBlock:
+  Enabled: true
+
+# Checks for redundant String#chars.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performanceredundantstringchars
+Performance/RedundantStringChars:
+  Enabled: true
+
+# Identifies places where split argument can be replaced from a deterministic
+# regexp to a string.
+Performance/RedundantSplitRegexpArgument:
+  Enabled: true
+
+# Identifies places where reverse.first(n) and reverse.first can be replaced by last(n).reverse and last.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancereversefirst
+Performance/ReverseFirst:
+  Enabled: true
+
+# Identifies places where sort { |a, b| b <=> a } can be replaced by a faster sort.reverse.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancesortreverse
+Performance/SortReverse:
+  Enabled: true
+
+# Identifies places where gsub(/a+/, 'a') and gsub!(/a+/, 'a') can be replaced by squeeze('a') and squeeze!('a').
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancesqueeze
+Performance/Squeeze:
+  Enabled: true
+
+# Use `start_with?` instead of a regex match anchored to the beginning of a
+# string.
+Performance/StartWith:
+  Enabled: true
+
+# Identifies unnecessary use of a regex where String#include? would suffice.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancestringinclude
+Performance/StringInclude:
+  Enabled: true
+
+# Identifies places where string identifier argument can be replaced by symbol
+# identifier argument. It prevents the redundancy of the internal
+# string-to-symbol conversion.
+Performance/StringIdentifierArgument:
+  Enabled: true
+
+# Use `tr` instead of `gsub` when you are replacing the same number of
+# characters. Use `delete` instead of `gsub` when you are deleting
+# characters.
+Performance/StringReplacement:
+  Enabled: true
+
+# Identifies places where custom code finding the sum of elements in some
+# Enumerable object can be replaced by Enumerable#sum method.
+# https://docs.rubocop.org/rubocop-performance/1.8/cops_performance.html#performancesum
+Performance/Sum:
+  Enabled: true
+
+# Checks for `.times.map` calls.
+Performance/TimesMap:
+  Enabled: true
+
+# Flags potentially expensive operations on ZIP archives.
+Performance/Rubyzip:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*'

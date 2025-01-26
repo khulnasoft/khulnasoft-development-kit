@@ -1,0 +1,242 @@
+---
+require:
+  - rubocop-rails
+  - ./lib/khulnasoft/styles/rubocop
+
+# Cop that prevents the use of `dependent: ...` in ActiveRecord models.
+Cop/ActiveRecordDependent:
+  Enabled: true
+  Include:
+    - app/models/**/*.rb
+
+# Cop that prevents the use of `serialize` in ActiveRecord models.
+Cop/ActiveRecordSerialize:
+  Enabled: true
+  Include:
+    - app/models/**/*.rb
+
+# Cop that prevents the use of polymorphic associations.
+Cop/PolymorphicAssociations:
+  Enabled: true
+  Include:
+    - app/models/**/*.rb
+
+# Prevents usage of 'redirect_to' in actions 'destroy' and 'destroy_all'
+# without specifying 'status'.
+Cop/RedirectWithStatus:
+  Enabled: true
+  Include:
+    - app/controllers/**/*.rb
+
+# Enables Rails cops.
+Rails:
+  Enabled: true
+
+# Enforces consistent use of action filter methods.
+Rails/ActionFilter:
+  Enabled: true
+  EnforcedStyle: action
+
+# Checks that Active Record callbacks are declared in the order in which they will be executed.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsactiverecordcallbacksorder
+Rails/ActiveRecordCallbacksOrder:
+  Enabled: true
+
+# Enforces that there is only one call to after_commit
+# (and its aliases - after_create_commit, after_update_commit, and after_destroy_commit)
+# with the same callback name per model.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsaftercommitoverride
+Rails/AfterCommitOverride:
+  Enabled: true
+
+# Check that models subclass ApplicationRecord.
+Rails/ApplicationRecord:
+  Enabled: false
+
+Rails/AttributeDefaultBlockValue: # (new in 2.9)
+  Enabled: true
+
+# Enforce using `blank?` and `present?`.
+Rails/Blank:
+  Enabled: false
+
+# Checks the correct usage of date aware methods, such as `Date.today`,
+# `Date.current`, etc.
+Rails/Date:
+  Enabled: true
+  EnforcedStyle: flexible
+
+# Prefer delegate method for delegations.
+# Disabled per https://khulnasoft.com/khulnasoft-org/khulnasoft-ce/issues/35869
+Rails/Delegate:
+  Enabled: false
+
+# This cop checks dynamic `find_by_*` methods.
+Rails/DynamicFindBy:
+  Enabled: false
+
+# Defining enums with keyword arguments syntax is deprecated and will be removed in
+# Rails 8.0. Positional arguments should be used instead
+Rails/EnumSyntax:
+  Enabled: true
+
+# This cop enforces that 'exit' calls are not used within a rails app.
+Rails/Exit:
+  Enabled: true
+  Exclude:
+    - lib/khulnasoft/upgrader.rb
+    - 'lib/backup/**/*'
+
+# Prefer `find_by` over `where.first`.
+Rails/FindBy:
+  Enabled: true
+  Include:
+    - 'app/**/*.rb'
+    - 'lib/**/*.rb'
+
+# Enforces that ActiveRecord#find is used instead of where.take!, find_by!, and find_by_id!
+# to retrieve a single record by primary key when you expect it to be found.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsfindbyid
+Rails/FindById:
+  Enabled: true
+
+# Prefer `all.find_each` over `all.find`.
+Rails/FindEach:
+  Enabled: true
+
+# Prefer has_many :through to has_and_belongs_to_many.
+Rails/HasAndBelongsToMany:
+  Enabled: true
+
+# This cop is used to identify usages of http methods like `get`, `post`,
+# `put`, `patch` without the usage of keyword arguments in your tests and
+# change them to use keyword args.
+Rails/HttpPositionalArguments:
+  Enabled: true
+
+# Checks that Active Support’s inquiry method is not used.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsinquiry
+Rails/Inquiry:
+  Enabled: true
+
+# Enforces that mailer names end with Mailer suffix.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsmailername
+Rails/MailerName:
+  Enabled: true
+
+# Identifies places where defining routes with match can be replaced with a specific HTTP method.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsmatchroute
+Rails/MatchRoute:
+  Enabled: true
+
+# Enforces the use of collection.exclude?(obj) over !collection.include?(obj).
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsnegateinclude
+Rails/NegateInclude:
+  Enabled: true
+
+# Checks for calls to puts, print, etc.
+Rails/Output:
+  Enabled: true
+  Exclude:
+    - lib/khulnasoft/seeder.rb
+    - lib/khulnasoft/upgrader.rb
+    - 'lib/backup/**/*'
+    - 'lib/tasks/**/*'
+
+# This cop checks for the use of output safety calls like html_safe and
+# raw.
+Rails/OutputSafety:
+  Enabled: true
+
+# Enforces the use of pluck over map.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railspluck
+Rails/Pluck:
+  Enabled: true
+
+# Identifies places where pluck is used in where query methods and can be replaced with select.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railspluckinwhere
+Rails/PluckInWhere:
+  Enabled: true
+
+# Checks for incorrect grammar when using methods like `3.day.ago`.
+Rails/PluralizationGrammar:
+  Enabled: true
+
+# Enforce using `blank?` and `present?`.
+Rails/Present:
+  Enabled: false
+
+# Checks for `read_attribute(:attr)` and `write_attribute(:attr, val)`.
+Rails/ReadWriteAttribute:
+  Enabled: false
+
+# Do not assign relative date to constants.
+Rails/RelativeDateConstant:
+  Enabled: false
+
+# Looks for inline rendering within controller actions.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsrenderinline
+Rails/RenderInline:
+  Enabled: true
+
+# Identifies places where render text: can be replaced with render plain:.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsrenderplaintext
+Rails/RenderPlainText:
+  Enabled: true
+
+# Checks for the usage of obsolete `require_dependency` method for Rails
+# applications running in Zeitwerk mode.
+Rails/RequireDependency:
+  Enabled: true
+
+# Checks the arguments of ActiveRecord scopes.
+Rails/ScopeArgs:
+  Enabled: true
+
+# Enforces that short forms of I18n methods are used: t instead of translate and l instead of localize.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railsshorti18n
+Rails/ShortI18n:
+  Enabled: true
+
+# Checks SQL heredocs to use .squish.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railssquishedsqlheredocs
+Rails/SquishedSQLHeredocs:
+  Enabled: true
+
+# This cop checks for the use of Time methods without zone.
+Rails/TimeZone:
+  Enabled: true
+  EnforcedStyle: flexible
+
+# Checks for the use of exit statements (namely return, break and throw) in
+# transactions. This is due to the eventual unexpected behavior when using
+# ActiveRecord >= 7, where transactions exited using these statements are being
+# rollbacked rather than committed (pre ActiveRecord 7 behavior).
+Rails/TransactionExitStatement:
+  Enabled: true
+
+# This cop checks for the use of old-style attribute validation macros.
+Rails/Validation:
+  Enabled: true
+
+Rails/WhereEquals: # (new in 2.9)
+  Enabled: true
+
+# Enforces consistent style when using exists?.
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railswhereexists
+Rails/WhereExists:
+  Enabled: true
+
+# Identifies places where manually constructed SQL in where can be replaced with where.not(...).
+# https://docs.rubocop.org/rubocop-rails/2.8/cops_rails.html#railswherenot
+Rails/WhereNot:
+  Enabled: true
+
+# Identifies places where manually constructed SQL in where can be replaced with ranges.
+# https://docs.rubocop.org/rubocop-rails/cops_rails.html#railswhererange
+Rails/WhereRange:
+  Enabled: true
+
+# Bans the use of `include ActionView::Helpers::UrlHelper`.
+Rails/IncludeUrlHelper:
+  Enabled: true

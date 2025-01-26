@@ -4,7 +4,7 @@ require 'pathname'
 
 module KDK
   class Backup
-    SourceFileOutsideOfGdk = Class.new(StandardError)
+    SourceFileOutsideOfKdk = Class.new(StandardError)
     SourceFileDoesntExist = Class.new(StandardError)
 
     attr_reader :source_file
@@ -59,7 +59,7 @@ module KDK
 
     def validate!
       raise SourceFileDoesntExist unless source_file.exist?
-      raise SourceFileOutsideOfGdk unless source_file.to_s.start_with?(KDK.root.to_s)
+      raise SourceFileOutsideOfKdk unless source_file.to_s.start_with?(KDK.root.to_s)
 
       true
     end

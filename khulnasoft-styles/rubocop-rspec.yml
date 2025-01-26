@@ -1,0 +1,216 @@
+---
+require:
+  - rubocop-rspec
+  - rubocop-rspec_rails
+  - ./lib/khulnasoft/styles/rubocop
+
+# Check that instances are not being stubbed globally.
+RSpec/AnyInstance:
+  Enabled: false
+
+# Check for expectations where `be(...)` can replace `eql(...)`.
+RSpec/BeEql:
+  Enabled: true
+
+# We don't enforce this as we use this technique in a few places.
+RSpec/BeforeAfterAll:
+  Enabled: false
+
+# Enforces consistent use of be_a or be_kind_of.
+# https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/131#note_1141022718
+RSpec/ClassCheck:
+  Enabled: false
+
+# Check that the first argument to the top level describe is the tested class or
+# module.
+RSpec/DescribeClass:
+  Enabled: false
+
+# Checks that the second argument to `describe` specifies a method.
+RSpec/DescribeMethod:
+  Enabled: false
+
+# Avoid describing symbols.
+RSpec/DescribeSymbol:
+  Enabled: true
+
+# Checks that tests use `described_class`.
+RSpec/DescribedClass:
+  Enabled: true
+  SkipBlocks: true
+
+# Enforces custom RSpec dialects.
+# Migrated config from RSpec/Capybara/FeatureMethods
+RSpec/Dialect:
+  Enabled: true
+  PreferredMethods:
+    background: :before
+    scenario:   :it
+    xscenario:  :xit
+    given:      :let
+    given!:     :let!
+    feature:    :describe
+
+# Checks if an example group does not include any tests.
+RSpec/EmptyExampleGroup:
+  Enabled: true
+
+# Checks if there is an empty line after let blocks.
+RSpec/EmptyLineAfterLetBlock:
+  Enabled: true
+
+# Checks if there is an empty line after shared example blocks.
+RSpec/EmptyLineAfterSharedExample:
+  Enabled: true
+
+# Checks for long example.
+RSpec/ExampleLength:
+  Enabled: false
+  Max: 5
+
+# Avoid `it do` instead use `specify do`
+RSpec/ExampleWithoutDescription:
+  Enabled: true
+  EnforcedStyle: single_line_only
+
+# Do not use should when describing your tests.
+RSpec/ExampleWording:
+  Enabled: true
+  CustomTransform:
+    be: is
+    have: has
+    not: does not
+  IgnoredWords: []
+
+# Checks for `expect(...)` calls containing literal values.
+RSpec/ExpectActual:
+  Enabled: true
+
+# Checks for `expect {...}.to change {...}` using a block.
+# See https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/122#note_1089192391
+RSpec/ExpectChange:
+  Enabled: true
+  EnforcedStyle: block
+
+# Checks for opportunities to use `expect { … }.to output`.
+RSpec/ExpectOutput:
+  Enabled: true
+
+# Checks if there are focused specs.
+RSpec/Focus:
+  Enabled: true
+
+# Checks the arguments passed to `before`, `around`, and `after`.
+RSpec/HookArgument:
+  Enabled: true
+  EnforcedStyle: implicit
+
+# Checks for unused parameters to the `have_link` matcher.
+RSpec/HaveLinkParameters:
+  Enabled: true
+
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+# SupportedStyles: is_expected, should
+RSpec/ImplicitExpect:
+  Enabled: true
+  EnforcedStyle: is_expected
+
+# Do not set up test data using indexes (e.g., item_1, item_2).
+RSpec/IndexedLet:
+  Enabled: false
+
+# Checks for the usage of instance variables.
+# https://docs.khulnasoft.com/ee/development/testing_guide/best_practices.html#subject-and-let-variables
+RSpec/InstanceVariable:
+  Enabled: true
+
+# Checks for `subject` definitions that come after `let` definitions.
+RSpec/LeadingSubject:
+  Enabled: false
+
+# Checks unreferenced `let!` calls being used for test setup.
+RSpec/LetSetup:
+  Enabled: false
+
+# Checks where match_array is used.
+# see: https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/225
+RSpec/MatchArray:
+  Enabled: false
+
+# Check that chains of messages are not being stubbed.
+RSpec/MessageChain:
+  Enabled: false
+
+# Checks that message expectations are set using spies.
+RSpec/MessageSpies:
+  Enabled: false
+
+# Checks for multiple top-level describes.
+RSpec/MultipleDescribes:
+  Enabled: false
+
+# Checks if examples contain too many `expect` calls.
+RSpec/MultipleExpectations:
+  Enabled: false
+
+# Checks for explicitly referenced test subjects.
+RSpec/NamedSubject:
+  Enabled: true
+
+# Checks for nested example groups.
+RSpec/NestedGroups:
+  Enabled: false
+
+# Enforces the usage of the same method on all negative message expectations.
+RSpec/NotToNot:
+  EnforcedStyle: not_to
+  Enabled: true
+
+# See https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/122#note_1089202045
+RSpec/PredicateMatcher:
+  Enabled: false
+
+# Check for repeated description strings in example groups.
+RSpec/RepeatedDescription:
+  Enabled: false
+
+# Ensure RSpec hook blocks are always multi-line.
+RSpec/SingleLineHook:
+  Enabled: true
+  Exclude:
+    - 'spec/factories/*'
+    - 'spec/requests/api/v3/*'
+
+# Sort RSpec metadata alphabetically.
+# see: https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/232#note_2089653748
+RSpec/SortMetadata:
+  Enabled: false
+
+# Checks the file and folder naming of the spec file.
+RSpec/SpecFilePathFormat:
+  Enabled: true
+  IgnoreMethods: true
+
+# Checks the file and folder naming of the spec file.
+RSpec/SpecFilePathSuffix:
+  Enabled: true
+
+# Checks that message expectations do not have a configured response.
+# https://docs.rubocop.org/rubocop-rspec/1.44/cops_rspec.html#rspecstubbedmock
+RSpec/StubbedMock:
+  Enabled: false
+
+# Checks for stubbed test subjects.
+RSpec/SubjectStub:
+  Enabled: false
+
+# Prefer using verifying doubles over normal doubles.
+RSpec/VerifiedDoubles:
+  Enabled: true
+
+RSpec:
+  Language:
+    Helpers:
+      - let_it_be
+      - let_it_be_with_refind
+      - let_it_be_with_reload

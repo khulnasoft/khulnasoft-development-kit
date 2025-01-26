@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'khulnasoft-dangerfiles'
+require 'gitlab-dangerfiles'
 
 Khulnasoft::Dangerfiles.for_project(self) do |khulnasoft_dangerfiles|
   khulnasoft_dangerfiles.config.files_to_category = {

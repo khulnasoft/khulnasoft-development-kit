@@ -1,0 +1,9 @@
+---
+require:
+  - rubocop-capybara
+  - ./lib/khulnasoft/styles/rubocop
+
+# Checks if there is a more specific finder offered by Capybara.
+# https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/merge_requests/131#note_1141024624
+Capybara/SpecificFinders:
+  Enabled: false

@@ -1,0 +1,10 @@
+---
+mapping:
+  - source: 'lib/(.+)\.rb'
+    test: 'spec/%s_spec.rb'
+
+  - source: 'rubocop-.*\.yml'
+    test: 'spec/yml_spec.rb'
+
+  - source: '(spec/.*_spec\.rb)'
+    test: '%s'

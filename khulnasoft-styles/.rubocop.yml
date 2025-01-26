@@ -1,0 +1,53 @@
+inherit_from:
+  - rubocop-all.yml
+  - rubocop-minimal.yml
+  - rubocop-internal-affairs.yml
+  - .rubocop_todo.yml
+
+require:
+  - rubocop/cop/internal_affairs
+  - rubocop-rake
+
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  NewCops: disable # https://github.com/khulnasoft/khulnasoft-development-kit/tree/main/khulnasoft-styles/-/issues/40
+  Exclude:
+    - 'playground/**/*'
+
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
+  Enabled: true
+
+InternalAffairs/DeprecateCopHelper:
+  Enabled: true
+  Include:
+    - spec/**/*.rb
+
+# This only makes sense for cops that are included with RuboCop. We could add
+# our own config/default.yml and do something like
+# https://github.com/rubocop/rubocop-rspec/blob/master/lib/rubocop/rspec/inject.rb,
+# but realistically this is OK here.
+InternalAffairs/UndefinedConfig:
+  Enabled: false
+
+# Disable Rails-specific cops auto-enabled as part of `khulnasoft-styles`.
+CodeReuse/ActiveRecord:
+  Enabled: false
+
+Cop/ActiveRecordDependent:
+  Enabled: false
+
+Cop/ActiveRecordSerialize:
+  Enabled: false
+
+Cop/PolymorphicAssociations:
+  Enabled: false
+
+Cop/RedirectWithStatus:
+  Enabled: false
+
+Cop/InBatches:
+  Enabled: false

@@ -1,0 +1,15 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Denies usage of MD5
+Fips/MD5:
+  Enabled: true
+
+# Denies usage of SHA1
+Fips/SHA1:
+  Enabled: true
+
+# Replaces ::Digest with ::OpenSSL::Digest
+Fips/OpenSSL:
+  Enabled: true

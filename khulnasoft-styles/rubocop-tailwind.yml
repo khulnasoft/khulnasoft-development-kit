@@ -1,0 +1,11 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Prevent string interpolation when building Tailwind CSS utils names
+Tailwind/StringInterpolation:
+  Enabled: false
+
+# Prevent max-width media query Tailwind CSS utility classes. min-width media queries should be used instead.
+Tailwind/MaxWidthMediaQueries:
+  Enabled: false

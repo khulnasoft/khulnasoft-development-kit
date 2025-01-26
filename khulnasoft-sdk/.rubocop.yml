@@ -1,0 +1,24 @@
+inherit_gem:
+  khulnasoft-styles:
+    - rubocop-default.yml
+
+CodeReuse/ActiveRecord:
+  Exclude:
+    - spec/**/*.rb
+
+RSpec/FilePath:
+  Exclude:
+    - spec/khulnasoft-sdk/version_spec.rb
+  CustomTransform:
+    KhulnasoftSDK: khulnasoft-sdk
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
+Naming/FileName:
+  Exclude:
+    - lib/khulnasoft-sdk.rb
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 25
+  AllowSubject: true

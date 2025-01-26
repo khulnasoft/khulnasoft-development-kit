@@ -1,0 +1,15 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+inherit_from:
+  - rubocop-all.yml
+  - rubocop-capybara.yml
+  - rubocop-code_reuse.yml
+  - rubocop-factory_bot.yml
+  - rubocop-graphql.yml
+  - rubocop-internal-affairs.yml
+  - rubocop-migrations.yml
+  - rubocop-minimal.yml
+  - rubocop-rails.yml
+  - rubocop-tailwind.yml

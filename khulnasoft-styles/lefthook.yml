@@ -1,0 +1,24 @@
+# Lefthook configuration. For more information, see:
+# https://github.com/Arkweid/lefthook/blob/master/docs/full_guide.md
+
+pre-push:
+  parallel: true
+  commands:
+    # Run ruby linting
+    rubocop:
+      files: git diff --name-only --diff-filter=d $(git merge-base origin/master HEAD)..HEAD
+      glob: '*.{rb,rake}'
+      run: bundle exec rubocop --parallel --force-exclusion {files}
+
+    # Run only relevant specs.
+    rspec:
+      files: git diff --name-only --diff-filter=d $(git merge-base origin/master HEAD)..HEAD
+      run: |
+        tests=$(tff --mapping-file .tests_mapping.yml {files})
+        if [ "$tests" != "" ]; then
+          echo "bundle exec rspec --format progress $tests"
+          bundle exec rspec --format progress $tests
+        else
+          echo "No specs to run."
+          exit 0
+        fi

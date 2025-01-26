@@ -1,0 +1,17 @@
+---
+# This are the cops that has no external dependency on Rails specific code
+# or KhulnaSoft specific code
+#
+# It is intended to be used by any of our Ruby Gems that are plain ruby code only
+inherit_from:
+  - rubocop-bundler.yml
+  - rubocop-fips.yml
+  - rubocop-gemspec.yml
+  - rubocop-layout.yml
+  - rubocop-lint.yml
+  - rubocop-metrics.yml
+  - rubocop-naming.yml
+  - rubocop-performance.yml
+  - rubocop-rspec.yml
+  - rubocop-security.yml
+  - rubocop-style.yml

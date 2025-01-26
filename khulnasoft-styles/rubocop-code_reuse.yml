@@ -1,0 +1,28 @@
+---
+require:
+  - ./lib/khulnasoft/styles/rubocop
+
+# Denies the use of ActiveRecord methods outside of configured
+# excluded directories
+# Directories that allow the use of the denied methods.
+# To start we provide a default configuration that matches
+# a standard Rails app and enable.
+# The default configuration can be overridden by
+# providing your own Exclusion list as follows:
+# CodeReuse/ActiveRecord:
+#  Enabled: true
+#  Exclude:
+#    - app/models/**/*.rb
+#    - config/**/*.rb
+#    - db/**/*.rb
+#    - lib/tasks/**/*.rb
+#    - spec/**/*.rb
+#    - lib/khulnasoft/**/*.rb
+CodeReuse/ActiveRecord:
+  Enabled: true
+  Exclude:
+    - app/models/**/*.rb
+    - config/**/*.rb
+    - db/**/*.rb
+    - lib/tasks/**/*.rb
+    - spec/**/*.rb

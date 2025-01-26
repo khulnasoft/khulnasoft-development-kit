@@ -1,0 +1,14 @@
+---
+require:
+  - ./lib/rubocop/cop/gem_fetcher
+
+# Gems in consecutive lines should be alphabetically sorted
+Bundler/OrderedGems:
+  Enabled: false
+
+Cop/GemFetcher:
+  Enabled: true
+  Include:
+    - '**/*.gemfile'
+    - '**/Gemfile'
+    - '**/gems.rb'

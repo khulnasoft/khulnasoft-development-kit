@@ -1,0 +1,56 @@
+---
+require:
+  - rubocop-graphql
+
+# Ensures all arguments have a description
+# Disabled because our bespoke Graphql/Descriptions cop covers this.
+GraphQL/ArgumentDescription:
+  Enabled: false
+
+# Ensures all fields have a description
+# Disabled because our bespoke Graphql/Descriptions cop covers this.
+GraphQL/FieldDescription:
+  Enabled: false
+
+# Suggests using input type instead of many arguments
+GraphQL/ExtractInputType:
+  Enabled: false
+
+# Suggests extracting fields with common prefixes to the separate type
+GraphQL/ExtractType:
+  Enabled: true
+
+# Enforce use of `graphql_name` in GrahQL types.
+GraphQL/GraphqlName:
+  EnforcedStyle: required
+
+# Checks that types are defined with class-based API
+GraphQL/LegacyDsl:
+  Enabled: false
+
+# Detects missing max_complexity configuration in schema files.
+# Max complexity is defined in a different way.
+# See https://khulnasoft.com/khulnasoft-org/khulnasoft/-/blob/9c0dfedd80ede7dbdcc92cf3f5b14bf36998e85c/app/graphql/khulnasoft_schema.rb#L41-44
+GraphQL/MaxComplexitySchema:
+  Enabled: false
+
+# Detects missing max_depth configuration in schema files.
+# Max depth is defined in a different way.
+# See https://khulnasoft.com/khulnasoft-org/khulnasoft/-/blob/9c0dfedd80ede7dbdcc92cf3f5b14bf36998e85c/app/graphql/khulnasoft_schema.rb#L41-45
+GraphQL/MaxDepthSchema:
+  Enabled: false
+
+# Detects types that implement Node interface and not have `.authorized?` check.
+# `authorize` is used instead.
+GraphQL/NotAuthorizedNodeType:
+  Enabled: false
+
+# Checks that GraphQL Argument definitions prepare arguments to allow better Sorbet typing.
+# Sorbet is not (yet) used.
+GraphQL/PrepareMethod:
+  Enabled: false
+
+# Ensures all types have a description
+# Disabled because our bespoke Graphql/Descriptions cop covers this.
+GraphQL/ObjectDescription:
+  Enabled: false

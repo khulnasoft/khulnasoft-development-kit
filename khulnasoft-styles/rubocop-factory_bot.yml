@@ -1,0 +1,9 @@
+---
+require:
+  - rubocop-factory_bot
+  - ./lib/khulnasoft/styles/rubocop
+
+# Check for create_list FactoryBot declarations higher than MaxAmount
+FactoryBot/ExcessiveCreateList:
+  Enabled: true
+  MaxAmount: 10

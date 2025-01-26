@@ -1,0 +1,402 @@
+---
+# Checks for mistyped shorthand assignments.
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+# Checks for ambiguous block association with method when param passed without
+# parentheses.
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+
+# Checks for ambiguous operators in the first argument of a method invocation
+# without parentheses.
+Lint/AmbiguousOperator:
+  Enabled: true
+
+# Looks for expressions containing multiple binary operators where precedence
+# is ambiguous due to lack of parentheses.
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: true
+
+# Checks for ambiguous ranges.
+Lint/AmbiguousRange:
+  Enabled: true
+
+# This cop checks for ambiguous regexp literals in the first argument of
+# a method invocation without parentheses.
+Lint/AmbiguousRegexpLiteral:
+  Enabled: true
+
+# This cop checks for assignments in the conditions of if/while/until.
+# Forbid assignments within conditions.
+Lint/AssignmentInCondition:
+  Enabled: true
+  AllowSafeAssignment: false
+
+# Checks for places where binary operator has identical operands
+Lint/BinaryOperatorWithIdenticalOperands:
+  Enabled: true
+
+# Default values in optional keyword arguments and optional ordinal arguments
+# should not refer back to the name of the argument.
+Lint/CircularArgumentReference:
+  Enabled: true
+
+Lint/ConstantDefinitionInBlock: # (new in 0.91)
+  Enabled: true
+
+# Checks for overwriting an exception with an exception result by use rescue =>.
+Lint/ConstantOverwrittenInRescue:
+  Enabled: true
+
+# Check for debugger calls.
+Lint/Debugger:
+  Enabled: true
+
+# Check for deprecated class method calls.
+Lint/DeprecatedClassMethods:
+  Enabled: true
+
+# Checks for deprecated constants.
+Lint/DeprecatedConstants:
+  Enabled: true
+
+# Algorithmic constants for OpenSSL::Cipher and OpenSSL::Digest deprecated since OpenSSL version 2.2.0.
+# Prefer passing a string instead.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintdeprecatedopensslconstant
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+# Checks that there are no repeated bodies within if/unless, case-when, case-in
+# and rescue constructs.
+Lint/DuplicateBranch:
+  Enabled: true
+  IgnoreLiteralBranches: true
+  IgnoreConstantBranches: true
+
+# Checks that there are no repeated conditions used in if 'elsif'.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintduplicateelsifcondition
+Lint/DuplicateElsifCondition:
+  Enabled: true
+
+# Checks for duplicated magic comments.
+Lint/DuplicateMagicComment:
+  Enabled: true
+
+# Checks for duplicate elements in Regexp character classes.
+Lint/DuplicateRegexpCharacterClassElement:
+  Enabled: true
+
+Lint/DuplicateRequire: # (new in 0.90)
+  Enabled: true
+
+# Checks that there are no repeated exceptions used in 'rescue' expressions.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintduplicaterescueexception
+Lint/DuplicateRescueException:
+  Enabled: true
+
+# Check for immutable argument given to each_with_object.
+Lint/EachWithObjectArgument:
+  Enabled: true
+
+# Check for odd code arrangement in an else block.
+Lint/ElseLayout:
+  Enabled: true
+
+# Checks for blocks without a body. Such empty blocks are typically an
+# oversight or we should provide a comment be clearer what we’re aiming for.
+Lint/EmptyBlock:
+  Enabled: true
+
+# Checks for classes and metaclasses without a body. Such empty classes and
+# metaclasses are typically an oversight or we should provide a comment to be
+# clearer what we’re aiming for.
+Lint/EmptyClass:
+  Enabled: true
+
+# Checks for the presence of if, elsif and unless branches without a body.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintemptyconditionalbody
+Lint/EmptyConditionalBody:
+  Enabled: true
+
+# Checks for empty ensure block.
+Lint/EmptyEnsure:
+  Enabled: true
+
+Lint/EmptyFile: # (new in 0.90)
+  Enabled: true
+
+# Checks for the presence of in pattern branches without a body.
+Lint/EmptyInPattern:
+  Enabled: true
+
+# Checks for the presence of `when` branches without a body.
+Lint/EmptyWhen:
+  Enabled: true
+
+# Do not use return in an ensure block.
+Lint/EnsureReturn:
+  Enabled: true
+
+# Checks for flip flops.
+Lint/FlipFlop:
+  Enabled: true
+
+# Checks for the presence of precise comparison of floating point numbers.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintfloatcomparison
+Lint/FloatComparison:
+  Enabled: true
+
+# Catches floating-point literals too large or small for Ruby to represent.
+Lint/FloatOutOfRange:
+  Enabled: true
+
+# The number of parameters to format/sprint must match the fields.
+Lint/FormatParameterMismatch:
+  Enabled: true
+
+Lint/IdentityComparison: # (new in 0.91)
+  Enabled: true
+
+# Checks for adjacent string literals on the same line, which could better be
+# represented as a single string literal.
+Lint/ImplicitStringConcatenation:
+  Enabled: true
+
+# This cop checks for IO.select that is incompatible with Fiber Scheduler since
+# Ruby 3.0.
+Lint/IncompatibleIoSelectWithFiberScheduler:
+  Enabled: true
+
+# Checks for attempts to use `private` or `protected` to set the visibility
+# of a class method, which does not work.
+Lint/IneffectiveAccessModifier:
+  Enabled: false
+
+# Checks uses of lambda without a literal block. It emulates the following
+# warning in Ruby 3.0:
+Lint/LambdaWithoutLiteralBlock:
+  Enabled: true
+
+# Checks of literals used in conditions.
+Lint/LiteralAsCondition:
+  Enabled: true
+
+# Checks for literals used in interpolation.
+Lint/LiteralInInterpolation:
+  Enabled: true
+
+# Checks for uses of *begin...end while/until something*.
+Lint/Loop:
+  Enabled: false
+
+# Checks for the presence of constructors and lifecycle callbacks without calls to super.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintmissingsuper
+Lint/MissingSuper:
+  Enabled: false
+
+# Do not mix named captures and numbered captures in a Regexp literal
+# because numbered capture is ignored if they’re mixed.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintmixedregexpcapturetypes
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+# Do not use nested method definitions.
+Lint/NestedMethodDefinition:
+  Enabled: true
+
+# Do not omit the accumulator when calling `next` in a `reduce`/`inject` block.
+Lint/NextWithoutAccumulator:
+  Enabled: true
+
+# Checks for non-atomic file operation. And then replace it with a nearly
+# equivalent and atomic method.
+Lint/NonAtomicFileOperation:
+  Enabled: true
+
+# Checks for the presence of a return inside a begin..end block in assignment
+# contexts.
+Lint/NoReturnInBeginEndBlocks:
+  Enabled: true
+
+# Checks for uses of numbered parameter assignment.
+# Reason: Ruby >= 3.0 causes an error so no need to enable it.
+Lint/NumberedParameterAssignment:
+  Enabled: false
+
+# Looks for references of Regexp captures that are out of range and thus always returns nil.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintoutofrangeregexpref
+Lint/OutOfRangeRegexpRef:
+  Enabled: true
+
+# Checks for unintended or-assignment to a constant.
+Lint/OrAssignmentToConstant:
+  Enabled: true
+
+# Checks for method calls with a space before the opening parenthesis.
+Lint/ParenthesesAsGroupedExpression:
+  Enabled: true
+
+# Checks for raise or fail statements which are raising Exception class.
+Lint/RaiseException:
+  Enabled: true
+
+# Checks for `rand(1)` calls. Such calls always return `0` and most likely
+# a mistake.
+Lint/RandOne:
+  Enabled: true
+
+# This cop checks for redundant sort method to Dir.glob and Dir[]. Sort globbed
+# results by default in Ruby 3.0.
+Lint/RedundantDirGlobSort:
+  Enabled: true
+
+# This cop checks for unneeded usages of splat expansion
+Lint/RedundantSplatExpansion:
+  Enabled: false
+
+# Checks for Object#to_s usage in string interpolation.
+Lint/RedundantStringCoercion:
+  Enabled: true
+
+# Checks if include or prepend is called in refine block.
+Lint/RefinementImportMethods:
+  Enabled: true
+
+# Use parentheses in the method call to avoid confusion about precedence.
+Lint/RequireParentheses:
+  Enabled: true
+
+# Checks that a range literal is enclosed in parentheses when the end of the
+# range is at a line break.
+Lint/RequireRangeParentheses:
+  Enabled: true
+
+# Checks for uses a file requiring itself with require_relative.
+Lint/RequireRelativeSelfPath:
+  Enabled: true
+
+# Avoid rescuing the Exception class.
+Lint/RescueException:
+  Enabled: true
+
+# Ensures safe navigation isn't used with empty? in a conditional
+Lint/SafeNavigationWithEmpty:
+  Enabled: true
+
+# Checks for self-assignments.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintselfassignment
+Lint/SelfAssignment:
+  Enabled: true
+
+# Checks for the order which exceptions are rescued to avoid rescueing a less specific exception before a more specific exception.
+Lint/ShadowedException:
+  Enabled: false
+
+# This cop looks for use of the same name as outer local variables
+# for block arguments or block local variables.
+Lint/ShadowingOuterLocalVariable:
+  Enabled: false
+
+# Checks unexpected overrides of the Struct built-in methods via Struct.new.
+Lint/StructNewOverride:
+  Enabled: true
+
+# This cop checks for *rescue* blocks with no body.
+Lint/SuppressedException:
+  Enabled: false
+
+# Checks for uses of literal strings converted to a symbol where a literal
+# symbol could be used instead.
+Lint/SymbolConversion:
+  Enabled: true
+  EnforcedStyle: strict
+
+# Ensures that to_enum/enum_for, called for the current method, has correct
+# arguments.
+Lint/ToEnumArguments:
+  Enabled: true
+
+# Checks for top level return with arguments.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#linttoplevelreturnwithargument
+Lint/TopLevelReturnWithArgument:
+  Enabled: true
+
+Lint/TrailingCommaInAttributeDeclaration: # (new in 0.90)
+  Enabled: true
+
+# Checks for "triple quotes" (strings delimited by any odd number of quotes
+# greater than 1).
+Lint/TripleQuotes:
+  Enabled: true
+
+# Do not use prefix `_` for a variable that is used.
+Lint/UnderscorePrefixedVariableName:
+  Enabled: true
+
+# Checks for a block that is known to need more positional block arguments than
+# are given.
+Lint/UnexpectedBlockArity:
+  Enabled: true
+
+# Looks for reduce or inject blocks where the value returned (implicitly or
+# explicitly) does not include the accumulator.
+Lint/UnmodifiedReduceAccumulator:
+  Enabled: true
+
+# This cop checks for using Fixnum or Bignum constant
+Lint/UnifiedInteger:
+  Enabled: true
+
+# Unreachable code.
+Lint/UnreachableCode:
+  Enabled: true
+
+# Checks for loops that will have at most one iteration.
+# https://docs.rubocop.org/rubocop/0.89/cops_lint.html#lintunreachableloop
+Lint/UnreachableLoop:
+  Enabled: true
+
+# This cop checks for unused block arguments.
+Lint/UnusedBlockArgument:
+  Enabled: true
+
+# This cop checks for unused method arguments.
+Lint/UnusedMethodArgument:
+  Enabled: true
+
+# Checks for useless access modifiers.
+Lint/UselessAccessModifier:
+  ContextCreatingMethods:
+    - class_methods
+
+# Checks for useless assignment to a local variable.
+Lint/UselessAssignment:
+  Enabled: true
+
+# Checks for useless `else` in `begin..end` without `rescue`.
+Lint/UselessElseWithoutRescue:
+  Enabled: true
+
+Lint/UselessMethodDefinition: # (new in 0.90)
+  Enabled: true
+
+# Certain numeric operations have no impact, being: Adding or subtracting 0, multiplying
+# or dividing by 1 or raising to the power of 1. These are probably leftover from debugging, or are mistakes.
+Lint/UselessNumericOperation:
+  Enabled: true
+
+# Checks for useless setter call to a local variable.
+Lint/UselessSetterCall:
+  Enabled: true
+
+Lint/UselessTimes: # (new in 0.91)
+  Enabled: true
+
+# Looks for ruby2_keywords calls for methods that do not need it.
+Lint/UselessRuby2Keywords:
+  Enabled: true
+
+# Possible use of operator/literal/variable in void context.
+Lint/Void:
+  Enabled: true

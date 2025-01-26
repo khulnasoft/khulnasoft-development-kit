@@ -16,7 +16,7 @@ RSpec.describe KDK::Backup do
   describe 'initialize' do
     context 'when the source file is outside of the KDK' do
       it 'raises an exception' do
-        expect { described_class.new(Tempfile.new.path) }.to raise_error(KDK::Backup::SourceFileOutsideOfGdk)
+        expect { described_class.new(Tempfile.new.path) }.to raise_error(KDK::Backup::SourceFileOutsideOfKdk)
       end
     end
 
