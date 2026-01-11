@@ -133,7 +133,7 @@ module KDK
     settings :repositories do
       string(:charts_khulnasoft) { 'https://github.com/khulnasoft/charts/khulnasoft.git' }
       string(:docs_khulnasoft_com) { 'https://github.com/khulnasoft/technical-writing/docs-khulnasoft-com.git' }
-      string(:gitaly) { 'https://github.com/khulnasoft/gitaly.git' }
+      string(:gitaly) { 'https://gitlab.com/gitlab-org/gitaly.git' }
       string(:khulnasoft) { 'https://github.com/khulnasoft/khulnasoft.git' }
       string(:khulnasoft_ai_gateway) { 'https://github.com/khulnasoft/modelops/applied-ml/code-suggestions/ai-assist.git' }
       string(:khulnasoft_http_router) { 'https://github.com/khulnasoft/cells/http-router.git' }
