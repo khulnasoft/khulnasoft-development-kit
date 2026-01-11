@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CDPATH=''
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit ; pwd -P)"
+
+mise_available() {
+  local mise_enabled
+  local mise
+  mise_enabled=$(awk -v k1a=mise -v k1b=tool_version_manager -v k2=enabled '
+    BEGIN{FS=":[[:space:]]*"}
+    /^[[:alpha:]]/{k=$0;next}
+    {$0=k $0}
+    (k1a==$1 || k1b==$1) && k2==$2 {
+      if($3=="true"){f=1}
+    }
+    END{print (f==1)?"true":"false"}
+  ' "${ROOT_PATH}/kdk.yml" 2>/dev/null || echo 'false')
+  mise=$(command -v mise 2>/dev/null || true)
+
+  [ "${mise_enabled}" = "true" ] && [ -n "${mise}" ]
+}
+
+tool_version_manager_exec() {
+  local dir="${1}"
+  local command=("${@:2}")
+
+  cd "${dir}"
+
+  if mise_available; then
+    mise exec -- "${command[@]}"
+  else
+    "${command[@]}"
+  fi
+}
+
+tool_version_manager_exec "${1}" "${@:2}"

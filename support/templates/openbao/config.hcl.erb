@@ -1,0 +1,121 @@
+cluster_addr  = "http://<%= config.hostname %>:<%= config.openbao.cluster_port %>"
+api_addr      = "http://<%= config.hostname %>:<%= config.openbao.port %>"
+
+log_level = "trace"
+log_file = "<%= config.openbao.log_dir.join('service.log') %>"
+
+listener "tcp" {
+  address       = "<%= config.openbao.__listen %>"
+  tls_disable = true
+  telemetry {
+    unauthenticated_metrics_access = true
+  }
+}
+
+storage "postgresql" {
+  connection_url = "postgresql:///<%= config.openbao.database_name %>?host=<%= config.kdk_root.join('postgresql') %>"
+
+  max_idle_connections = 5
+  max_parallel = 5
+  ha_enabled = true
+  max_connect_retries = 10
+}
+
+seal "static" {
+  current_key_id = "demo"
+  current_key = "file:///<%= config.kdk_root.join('openbao/unseal.key') %>"
+}
+
+initialize "system" {
+  request "policy" {
+    operation = "create"
+      path = "sys/policies/acl/secrets_manager"
+      data = {
+      policy = <<-EOT
+        path "*" {
+          capabilities = [ "create", "read", "update", "delete", "list", "scan", "sudo" ]
+        }
+      EOT
+    }
+  }
+  <%- if config.openbao.admin_enabled -%>
+  request "userpass" {
+    operation = "create"
+    path = "sys/auth/userpass"
+    data = {
+      type = "userpass"
+    }
+  }
+  request "admin" {
+    operation = "create"
+    path = "auth/userpass/users/admin"
+    data = {
+      password = {
+        eval_type = "string"
+        eval_source = "file"
+        path = "<%= config.kdk_root.join('openbao/admin-password.txt') %>"
+      }
+      token_policies = "default,secrets_manager"
+    }
+  }
+  <%- end -%>
+  request "jwt" {
+    operation = "create"
+    path = "sys/auth/khulnasoft_rails_jwt"
+    data = {
+      type = "jwt"
+    }
+  }
+  request "jwt_config" {
+    operation = "update"
+    path = "auth/khulnasoft_rails_jwt/config"
+    data = {
+      oidc_discovery_url = "http<% config.https? ? "s" : "" %>://<%= config.hostname %>:3000"
+      bound_issuer = "http<% config.https? ? "s" : "" %>://<%= config.hostname %>:3000"
+      skip_jwks_validation = true
+    }
+  }
+  request "jwt_role" {
+    operation = "update"
+    path = "auth/khulnasoft_rails_jwt/role/app"
+    data = {
+      role_type = "jwt"
+      bound_audiences = "http<% config.https? ? "s" : "" %>://<%= config.hostname %>:<%= config.openbao.port %>"
+      user_claim = "user_id"
+      token_policies = "secrets_manager"
+      bound_claims = {
+        secrets_manager_scope = "privileged"
+      }
+      claim_mappings = {
+        correlation_id = "correlation_id"
+        project_id = "project_id"
+        group_id = "group_id"
+        namespace_id = "namespace_id"
+        user_id = "user_id"
+      }
+      bound_subject = "khulnasoft_secrets_manager"
+    }
+  }
+}
+
+audit "file" "logs" {
+  description = "Testing audit log for KDK"
+  options {
+    file_path = "<%= config.openbao.log_dir.join('audit-raw.log') %>"
+    log_raw = "true"
+  }
+}
+
+<%- if config.openbao.metrics_enabled -%>
+// See: https://docs.runway.khulnasoft.com/reference/observability/#default
+telemetry {
+  // These two options are recommended by OpenBao for use with stackdriver,
+  // but we'll opt to use an unauthenticated metrics endpoint filtered out
+  // by the WAF.
+  //
+  // See https://openbao.org/docs/configuration/telemetry/#stackdriver
+  disable_hostname = true
+  enable_hostname_label = true
+  metrics_prefix = "secrets_manager_openbao"
+}
+<%- end -%>

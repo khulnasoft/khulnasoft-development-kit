@@ -1,0 +1,31 @@
+v0.2.17
+- Add telemetry dependencies
+
+v0.2.7 ... v0.2.16
+- ???
+
+v0.2.6
+- Add required ruby version to gemspec
+
+v0.2.5
+- Add experimental support for Puma in KhulnaSoft Rails
+- Warn user if they are not using the proper Ruby version during KDK installation
+- Add 'kdk env' subcommand
+- Add support for khulnasoft-pages
+- Add support for running Rails 5
+
+v0.2.4
+- Better hints when run outside of KDK root.
+
+v0.2.3
+- Remember installation directory during 'kdk init'
+
+v0.2.2
+- Add 'kdk version' command
+
+v0.2.1
+- Automatically trust directory after 'kdk init'
+
+v0.2.0
+- Fix clone command (use default branch)
+- Add trusted_directories dotfile setting

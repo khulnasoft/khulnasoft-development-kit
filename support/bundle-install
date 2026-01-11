@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CDPATH=''
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")/.." || exit ; pwd -P)"
+
+DIR_TO_PROCESS="${1:-.}"
+MISE_AVAILABLE=$("${ROOT_PATH}/support/mise-available")
+
+ensure_bundler_version_installed() {
+  local gem_install_args=
+
+  exec_command "gem install bundler --conservative -v=$(needed_bundler_version) ${gem_install_args}"
+}
+
+needed_bundler_version() {
+  awk '/BUNDLED WITH/{ getline; print $NF; }' Gemfile.lock
+}
+
+bundle_install() {
+  bundle_check_command=$(prepare_command "bundle check > /dev/null 2>&1")
+  nproc_path=$(command -v nproc >/dev/null 2>&1 && echo 'nproc' || echo "sysctl -n hw.ncpu")
+  bundle_install_command=$(prepare_command "bundle install --jobs $($nproc_path 2>/dev/null || echo 2)")
+  ruby_version_command=$(prepare_command "ruby -v")
+  exec_command "${ruby_version_command}"
+  (exec_command "${bundle_check_command}" && echo "Bundle check passed.") || (echo "Bundle check failed. Installing gems using bundle install..." && exec_command "${bundle_install_command}")
+}
+
+prepare_command() {
+  local command="${1}"
+
+  [[ "${MISE_AVAILABLE}" == "true" ]] && command="mise exec -- ${command}"
+
+  echo "${command}"
+}
+
+exec_command() {
+  local command="${1}"
+
+  eval "${command}"
+}
+
+if [[ ! -d ${DIR_TO_PROCESS} ]]; then
+  echo "ERROR: Directory '${DIR_TO_PROCESS}' does not exist, exiting."
+fi
+
+cd "${DIR_TO_PROCESS}"
+
+ensure_bundler_version_installed
+bundle_install

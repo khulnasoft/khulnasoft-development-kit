@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+
+# This is the KDK one line installation. For more information, please visit:
+# https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/doc/index.md#one-line-installation
+#
+# Wrap everything in a function to ensure a partially downloaded install script
+# is not executed. Inspired by https://install.sandstorm.io/
+#
+# Valid args are:
+#
+# 1 = directory in which to clone into, default is kdk (KDK_INSTALL_DIR)
+# 2 = git SHA/branch to checkout once cloned, default is main (KDK_CLONE_BRANCH)
+# 3 = enable telemetry, default is false (ENABLE_TELEMETRY)
+#
+# Example usage with arguments:
+#
+#   curl "https://github.com/khulnasoft/khulnasoft-development-kit/-/raw/main/support/install" | bash -s kdk my-kdk-branch-name true
+#
+_() {
+
+set -eo pipefail
+
+DEFAULT_KDK_INSTALL_DIR="kdk"
+DEFAULT_KDK_REPO_URL="https://github.com/khulnasoft/khulnasoft-development-kit.git"
+DEFAULT_KHULNASOFT_REPO_URL="https://github.com/khulnasoft/khulnasoft.git"
+
+REQUIRED_COMMANDS=(git make)
+
+error() {
+  echo "ERROR: ${1}" >&2
+  exit 1
+}
+
+ensure_required_commands_exist() {
+  for command in "${REQUIRED_COMMANDS[@]}"; do
+    if ! command -v "${command}" > /dev/null 2>&1; then
+      error "Please ensure ${command} is installed."
+    fi
+  done
+}
+
+ensure_not_root() {
+  if [[ ${EUID} -eq 0 ]]; then
+    return 1
+  fi
+
+  return 0
+}
+
+clone_kdk_if_needed() {
+  if [[ -d ${KDK_INSTALL_DIR} ]]; then
+    echo "INFO: A ${KDK_INSTALL_DIR} directory already exists in the current working directory, resuming.."
+  else
+    git clone "${KDK_REPO_URL}" "${KDK_INSTALL_DIR}"
+  fi
+}
+
+ensure_kdk_clone_branch_checked_out() {
+  git -C "${PWD}/${KDK_INSTALL_DIR}" fetch origin "${KDK_CLONE_BRANCH}"
+  git -C "${PWD}/${KDK_INSTALL_DIR}" checkout "${KDK_CLONE_BRANCH}"
+}
+
+setup_tool_version_manager() {
+  local kdk_yml="${PWD}/kdk.yml"
+
+  echo "INFO: Configuring mise as tool version manager."
+
+  mkdir -p "$(dirname "${kdk_yml}")"
+
+  cat << EOF > "${kdk_yml}"
+---
+asdf:
+  opt_out: true
+tool_version_manager:
+  enabled: true
+EOF
+
+  local full_path
+  full_path=$(readlink -f "${kdk_yml}")
+
+  echo "INFO: Tool version manager settings saved to ${full_path}:"
+  cat "${kdk_yml}"
+}
+
+bootstrap() {
+  make bootstrap
+}
+
+kdk_install() {
+  echo "Running 'kdk install' using mise.."
+  mise exec -- kdk install khulnasoft_repo="$KHULNASOFT_REPO_URL" telemetry_enabled="$ENABLE_TELEMETRY"
+}
+
+echo
+echo "INFO: This is the KDK one line installation. For more information, please visit:"
+echo "INFO: https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/doc/index.md#one-line-installation"
+echo "INFO:"
+echo "INFO: The source for the installation script can be viewed at:"
+echo "INFO: https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/support/install"
+echo
+
+if [ $# -eq 1 ]; then
+  echo "Where would you like to install the KDK? [./${DEFAULT_KDK_INSTALL_DIR}]"
+  read -r KDK_INSTALL_DIR </dev/tty
+  echo
+  echo "Which KhulnaSoft repo URL would you like to clone? [${DEFAULT_KHULNASOFT_REPO_URL}]"
+  echo
+  echo "ATTENTION: For members of the wider community, it is recommended to use the community fork (https://khulnasoft.com/khulnasoft-community/khulnasoft-org/khulnasoft.git)."
+  echo "See https://khulnasoft.com/khulnasoft-community/meta for instructions on how to join."
+  echo "If you'd prefer to use your own repository, please ensure that its visibility is set to public."
+  read -r KHULNASOFT_REPO_URL </dev/tty
+  echo
+  echo "To improve KDK, KhulnaSoft would like to collect basic error and usage, including your platform and architecture."
+  echo
+  echo "Would you like to send telemetry anonymously to KhulnaSoft? [y/N]:"
+  read -r consent </dev/tty
+  case "$consent" in
+    [yY]) ENABLE_TELEMETRY="true" ;;
+    *)    ENABLE_TELEMETRY="false" ;;
+  esac
+else
+  # Note: Passing arguments this way is meant for CI.
+  # If you're running this manually, don't rely on the argument order as it may change.
+  KDK_INSTALL_DIR="${2-kdk}"
+  KDK_CLONE_BRANCH="${3-main}"
+  ENABLE_TELEMETRY="${4-false}"
+fi
+
+# Set defaults for any unset variables.
+KDK_INSTALL_DIR=${KDK_INSTALL_DIR:-${DEFAULT_KDK_INSTALL_DIR}}
+KDK_CLONE_BRANCH=${KDK_CLONE_BRANCH:-main}
+KHULNASOFT_REPO_URL=${KHULNASOFT_REPO_URL:-${DEFAULT_KHULNASOFT_REPO_URL}}
+KDK_REPO_URL=${KDK_REPO_URL:-${DEFAULT_KDK_REPO_URL}}
+
+if ! ensure_not_root; then
+  error "Running as root is not supported."
+fi
+
+ensure_required_commands_exist
+clone_kdk_if_needed
+ensure_kdk_clone_branch_checked_out
+cd "${KDK_INSTALL_DIR}" || exit
+setup_tool_version_manager
+bootstrap
+kdk_install
+
+echo "INFO: To ensure you're in the newly installed KDK directory, please run:"
+echo "cd ${KDK_INSTALL_DIR}"
+echo
+}
+
+# If we've reached here, the entire install script has been downloaded and
+# "should" be safe to execute.
+_ "$0" "$@"

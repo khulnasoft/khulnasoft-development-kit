@@ -1,0 +1,225 @@
+#!/usr/bin/env bash
+
+# This is the KDK + Geo one line installation. For more information, please visit:
+# https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/doc/index.md#one-line-installation
+#
+# Wrap everything in a function to ensure a partially downloaded install script
+# is not executed. Inspired by https://install.sandstorm.io/
+#
+# Requires KHULNASOFT_ACTIVATION_CODE or KHULNASOFT_LICENSE_FILE to be set, like:
+#
+#   export KHULNASOFT_ACTIVATION_CODE=your_activation_code
+#
+# Or:
+#
+#   export KHULNASOFT_LICENSE_FILE="/path/to/license/file"
+#
+# Valid arguments are:
+#
+# 1 = directory in which to clone into, default is kdk (KDK_PRIMARY_INSTALL_DIR)
+# 2 = directory in which to clone into, default is kdk2 (KDK_SECONDARY_INSTALL_DIR)
+# 3 = git SHA/branch to checkout once cloned, default is main (KDK_CLONE_BRANCH)
+# 4 = enable telemetry, default is false (ENABLE_TELEMETRY)
+#
+# Example usage with arguments:
+#
+#   curl "https://github.com/khulnasoft/khulnasoft-development-kit/-/raw/main/support/geo-install" | bash -s kdk-a kdk-b my-kdk-branch-name true
+#
+_() {
+
+set -eo pipefail
+
+DEFAULT_KDK_PRIMARY_INSTALL_DIR="kdk"
+DEFAULT_KDK_SECONDARY_INSTALL_DIR="kdk2"
+DEFAULT_KDK_REPO_URL="https://github.com/khulnasoft/khulnasoft-development-kit.git"
+DEFAULT_KHULNASOFT_REPO_URL="https://github.com/khulnasoft/khulnasoft.git"
+
+REQUIRED_COMMANDS=(git make)
+REQUIRED_ANY_OF_ENV_VARS=(KHULNASOFT_ACTIVATION_CODE KHULNASOFT_LICENSE_FILE)
+
+error() {
+  echo "ERROR: ${1}" >&2
+  exit 1
+}
+
+ensure_required_commands_exist() {
+  for command in "${REQUIRED_COMMANDS[@]}"; do
+    if ! command -v "${command}" > /dev/null 2>&1; then
+     error "Please ensure ${command} is installed."
+    fi
+  done
+}
+
+# Function to check if any one of the list of environment variables is set
+ensure_required_any_of_env_vars_exist() {
+  local found=false
+  for var_name in "${REQUIRED_ANY_OF_ENV_VARS[@]}"; do
+    if [[ -n "${!var_name}" ]]; then
+      found=true
+      break
+    fi
+  done
+
+  if ! $found; then
+    echo "Support for KHULNASOFT_LICENSE_KEY was removed in favor of standardized license variables."
+    echo "Refer to doc/howto/geo.md for more info."
+    error "Please ensure one of the following environment variables is set: ${REQUIRED_ANY_OF_ENV_VARS[*]}"
+  fi
+}
+
+ensure_not_root() {
+  if [[ ${EUID} -eq 0 ]]; then
+    return 1
+  fi
+
+  return 0
+}
+
+clone_kdk_if_needed() {
+  if [[ -d ${KDK_PRIMARY_INSTALL_DIR} ]]; then
+    echo "INFO: A ${KDK_PRIMARY_INSTALL_DIR} directory already exists in the current working directory, resuming.."
+  else
+    git clone "${KDK_REPO_URL}" "${KDK_PRIMARY_INSTALL_DIR}"
+  fi
+}
+
+clone_kdk2_if_needed() {
+  if [[ -d ${KDK_SECONDARY_INSTALL_DIR} ]]; then
+    echo "INFO: A ${KDK_SECONDARY_INSTALL_DIR} directory already exists in the current working directory, resuming.."
+  else
+    git clone "${KDK_PRIMARY_INSTALL_DIR}" "${KDK_SECONDARY_INSTALL_DIR}"
+  fi
+}
+
+ensure_kdk_clone_branch_checked_out() {
+  git -C "${PWD}/${KDK_PRIMARY_INSTALL_DIR}" fetch origin "${KDK_CLONE_BRANCH}"
+  git -C "${PWD}/${KDK_PRIMARY_INSTALL_DIR}" checkout "${KDK_CLONE_BRANCH}"
+}
+
+setup_tool_version_manager() {
+  local kdk_yml="${PWD}/kdk.yml"
+
+  echo "INFO: Configuring mise as tool version manager."
+
+  mkdir -p "$(dirname "${kdk_yml}")"
+
+  cat << EOF > "${kdk_yml}"
+---
+asdf:
+  opt_out: true
+tool_version_manager:
+  enabled: true
+EOF
+
+  local full_path
+  full_path=$(readlink -f "${kdk_yml}")
+
+  echo "INFO: Tool version manager settings saved to ${full_path}:"
+  cat "${kdk_yml}"
+}
+
+bootstrap() {
+  make bootstrap
+}
+
+kdk_install() {
+  mise exec -- kdk install khulnasoft_repo="$KHULNASOFT_REPO_URL" telemetry_enabled="$ENABLE_TELEMETRY"
+}
+
+add_license() {
+  mise exec -C khulnasoft -- bundle install
+
+  if mise exec -C khulnasoft -- bundle exec rake khulnasoft:license:info; then
+    echo "INFO: Skipping license loading since it is already loaded."
+    return
+  fi
+
+  mise exec -C khulnasoft -- bundle exec rake "khulnasoft:license:load[verbose]"
+}
+
+echo
+echo "INFO: This is the KDK + Geo one line installation. For more information, please visit:"
+echo "INFO: https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/doc/howto/geo.md#easy-installation"
+echo "INFO:"
+echo "INFO: The source for the installation script can be viewed at:"
+echo "INFO: https://github.com/khulnasoft/khulnasoft-development-kit/-/blob/main/support/geo-install"
+echo
+
+if [ $# -eq 1 ]; then
+  echo "Where would you like to install the primary KDK? [./${DEFAULT_KDK_PRIMARY_INSTALL_DIR}]"
+  read -r KDK_PRIMARY_INSTALL_DIR </dev/tty
+  echo
+  echo "Where would you like to install the secondary KDK? [./${DEFAULT_KDK_SECONDARY_INSTALL_DIR}]"
+  read -r KDK_SECONDARY_INSTALL_DIR </dev/tty
+  echo
+  echo "Which KhulnaSoft repo URL would you like to clone? [${DEFAULT_KHULNASOFT_REPO_URL}]"
+  echo
+  echo "ATTENTION: For members of the wider community, it is recommended to use the community fork (https://khulnasoft.com/khulnasoft-community/khulnasoft-org/khulnasoft.git)."
+  echo "See https://khulnasoft.com/khulnasoft-community/meta for instructions on how to join."
+  echo "If you'd prefer to use your own repository, please ensure that its visibility is set to public."
+  read -r KHULNASOFT_REPO_URL </dev/tty
+  echo
+  echo "To improve KDK, KhulnaSoft would like to collect basic error and usage, including your platform and architecture."
+  echo
+  echo "Would you like to send telemetry anonymously to KhulnaSoft? [y/N]:"
+  read -r consent </dev/tty
+  case "$consent" in
+    [yY]) ENABLE_TELEMETRY="true" ;;
+    *)    ENABLE_TELEMETRY="false" ;;
+  esac
+else
+  # Note: Passing arguments this way is meant for CI.
+  # If you're running this manually, don't rely on the argument order as it may change.
+  KDK_PRIMARY_INSTALL_DIR="${2-kdk}"
+  KDK_SECONDARY_INSTALL_DIR="${3-kdk2}"
+  KDK_CLONE_BRANCH="${4-main}"
+  ENABLE_TELEMETRY="${5-false}"
+fi
+
+# Set defaults for any unset variables.
+KDK_PRIMARY_INSTALL_DIR=${KDK_PRIMARY_INSTALL_DIR:-${DEFAULT_KDK_PRIMARY_INSTALL_DIR}}
+KDK_SECONDARY_INSTALL_DIR=${KDK_SECONDARY_INSTALL_DIR:-${DEFAULT_KDK_SECONDARY_INSTALL_DIR}}
+KDK_CLONE_BRANCH=${KDK_CLONE_BRANCH:-main}
+KHULNASOFT_REPO_URL=${KHULNASOFT_REPO_URL:-${DEFAULT_KHULNASOFT_REPO_URL}}
+KDK_REPO_URL=${KDK_REPO_URL:-${DEFAULT_KDK_REPO_URL}}
+
+if ! ensure_not_root; then
+  error "Running as root is not supported."
+fi
+
+ensure_required_commands_exist
+ensure_required_any_of_env_vars_exist
+
+# Collapsible section for geo-install CI job. See https://docs.khulnasoft.com/ee/ci/jobs/index.html#custom-collapsible-sections
+echo -e "\e[0Ksection_start:$(date +%s):set_up_primary_kdk\r\e[0KSet up primary KDK"
+clone_kdk_if_needed
+ensure_kdk_clone_branch_checked_out
+cd "${KDK_PRIMARY_INSTALL_DIR}" || error "Clone of KDK should have created ${KDK_PRIMARY_INSTALL_DIR} directory."
+setup_tool_version_manager
+bootstrap
+kdk_install
+add_license
+
+echo "then:"
+echo "cd ${KDK_PRIMARY_INSTALL_DIR}"
+echo
+echo -e "\e[0Ksection_end:$(date +%s):set_up_primary_kdk\r\e[0K"
+
+echo -e "\e[0Ksection_start:$(date +%s):set_up_secondary_kdk\r\e[0KSet up secondary KDK"
+cd ..
+clone_kdk2_if_needed
+cd "${KDK_SECONDARY_INSTALL_DIR}" || error "Clone of KDK should have created ${KDK_SECONDARY_INSTALL_DIR} directory."
+setup_tool_version_manager
+cd "../${KDK_PRIMARY_INSTALL_DIR}" || error "Sanity check for ${KDK_PRIMARY_INSTALL_DIR} directory failed."
+mise exec -- ./support/geo-add-secondary --secondary_port 3001 --primary . "../${KDK_SECONDARY_INSTALL_DIR}"
+
+echo "INFO: To ensure you're in the newly installed secondary KDK directory, please run:"
+echo
+echo "cd ${KDK_SECONDARY_INSTALL_DIR}"
+echo
+echo -e "\e[0Ksection_end:$(date +%s):set_up_secondary_kdk\r\e[0K"
+}
+
+# If we've reached here, the entire install script has been downloaded and
+# "should" be safe to execute.
+_ "$0" "$@"

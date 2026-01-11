@@ -1,0 +1,115 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV MISE_QUIET=true
+
+ARG workspace_user=khulnasoft-workspaces
+ENV WORKSPACE_USER ${workspace_user}
+ENV HOME=/home/${WORKSPACE_USER}
+ENV WORKSPACE_DIR_NAME=${HOME}/workspace
+ENV PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/bin:${HOME}/.local/share/mise/shims:${PATH}"
+
+# See https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2807
+ARG mise_http_timeout=60s
+ENV MISE_HTTP_TIMEOUT $mise_http_timeout
+ARG mise_fetch_remote_versions_timeout=60s
+ENV MISE_FETCH_REMOTE_VERSIONS_TIMEOUT $mise_fetch_remote_versions_timeout
+
+ENV MISE_TRUSTED_CONFIG_PATHS="${WORKSPACE_DIR_NAME}/khulnasoft-development-kit:/projects/khulnasoft-development-kit"
+
+# See https://github.com/khulnasoft/khulnasoft-development-kit/-/issues/2611
+ENV VITE_RUBY_SKIP_PROXY=false
+
+ARG DEPENDENCY_HASH
+RUN echo "Dependency hash: $DEPENDENCY_HASH"
+
+ARG git_checkout_branch
+ENV GIT_CHECKOUT_BRANCH $git_checkout_branch
+
+ARG git_remote_origin_url
+ENV GIT_REMOTE_ORIGIN_URL $git_remote_origin_url
+
+COPY packages_ubuntu.txt /var/tmp/platform_packages.txt
+# Install prerequisites
+RUN apt-get update && \
+    apt-get upgrade -yqq && \
+    apt-get install -y $(sed -e 's/#.*//' "/var/tmp/platform_packages.txt") && \
+    apt-get install -yqq bash-completion locales software-properties-common && \
+    wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    chmod +x /usr/local/bin/yq && \
+    sed -i "s|# en_US.UTF-8 UTF-8|en_US.UTF-8 UTF-8|" /etc/locale.gen && \
+    sed -i "s|# C.UTF-8 UTF-8|C.UTF-8 UTF-8|" /etc/locale.gen && \
+    locale-gen C.UTF-8 en_US.UTF-8
+
+# Install runner
+RUN curl -L https://packages.khulnasoft.com/install/repositories/runner/khulnasoft-runner/script.deb.sh | bash && \
+    apt-get install -yqq khulnasoft-runner
+
+RUN useradd -l -u 5001 -G sudo -m -d "/home/${WORKSPACE_USER}" -s /bin/bash "${WORKSPACE_USER}" && \
+    passwd -d "${WORKSPACE_USER}" && \
+    echo "${WORKSPACE_USER} ALL=(ALL:ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${WORKSPACE_USER}_sudoers" && \
+    mkdir -p ${WORKSPACE_DIR_NAME} && \
+    chgrp -R 0 /home && \
+    chmod -R g=u /etc/passwd /etc/group /home && \
+    chown -R ${WORKSPACE_USER}:${WORKSPACE_USER} "${WORKSPACE_DIR_NAME}"
+
+RUN apt-get clean -y && \
+    apt-get autoremove -y && \
+    rm -rf /var/cache/apt/* /var/cache/apt/archives/* /var/lib/apt/lists/* /var/log/*.log /var/tmp/*
+
+# Set up SSH
+RUN sed -i 's/nullok_secure/nullok/' /etc/pam.d/common-auth && \
+    echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config && \
+    mkdir /run/sshd && \
+    ssh-keygen -A && \
+    chmod 775 /etc/ssh/ssh_host_rsa_key && \
+    chmod 775 /etc/ssh/ssh_host_ecdsa_key && \
+    chmod 775 /etc/ssh/ssh_host_ed25519_key && \
+    chmod 775 /etc/shadow
+
+# Set up Docker
+RUN apt-get install -yqq ca-certificates && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+        tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install -yqq --no-install-recommends --no-install-suggests docker-ce docker-ce-cli containerd.io && \
+    usermod -aG docker ${WORKSPACE_USER}
+
+USER ${WORKSPACE_USER}
+WORKDIR ${WORKSPACE_DIR_NAME}
+
+COPY kdk.yml /tmp/kdk.yml
+
+COPY .mise-version /var/tmp/.mise-version
+RUN curl -fsSL https://mise.run | MISE_VERSION=$(< /var/tmp/.mise-version) bash && \
+    eval "$(~/.local/bin/mise activate bash --shims)"
+
+RUN git clone https://github.com/khulnasoft/khulnasoft-development-kit.git && \
+    cd khulnasoft-development-kit && \
+    if [ -n "${GIT_REMOTE_ORIGIN_URL:-}" ]; then \
+        git remote set-url origin "${GIT_REMOTE_ORIGIN_URL}.git" && \
+        git fetch; \
+    fi && \
+    if [ -n "${GIT_CHECKOUT_BRANCH:-}" ]; then \
+        git checkout "${GIT_CHECKOUT_BRANCH}"; \
+    fi && \
+    cp /tmp/kdk.yml kdk.yml && \
+    support/bootstrap && \
+    git clone --filter=blob:none --sparse --depth 1 https://github.com/khulnasoft/khulnasoft.git && \
+    cd khulnasoft && \
+    git sparse-checkout set '*_VERSION' '.tool-versions' 'workhorse/.tool-versions' && \
+    cd .. && \
+    (kdk rake update:tool-versions || true) && \
+    mise list && \
+    (mise doctor || true) && \
+    cd ${WORKSPACE_DIR_NAME} && \
+    rm -rf khulnasoft-development-kit && \
+    rm -rf ${HOME}/.cache/* && \
+    rm -rf ${HOME}/.rustup/toolchains/*/share/doc && \
+    (find /tmp -mindepth 1 ! -name 'kdk.yml' -user khulnasoft-workspaces -delete 2>/dev/null || true) && \
+    echo "=== Final disk usage ===" && \
+    (du -ah / 2>/dev/null | sort -rh | head -20 || true)

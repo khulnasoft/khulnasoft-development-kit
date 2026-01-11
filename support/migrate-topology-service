@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+kdk_root=$(kdk config get kdk_root)
+data_source="$1"
+
+"${kdk_root}/support/exec-cd" "${kdk_root}/khulnasoft-topology-service" \
+  go run ./cmd/goose-migrate up \
+  --driver-name=pgx \
+  --data-source="${data_source}" \
+  --base-dir="db/migrations"

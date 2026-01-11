@@ -1,0 +1,16 @@
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# Clear build context, and include only paths used by Dockerfile
+/*
+!/.khulnasoft-ci-cache
+!/.mise-version
+!/.tool-versions
+!/mise.toml
+!/Gemfile
+!/Gemfile.lock
+!/Rakefile
+!/bin
+!/gem
+!/lib
+!/packages*.txt
+!/support/bootstrap
+!/support/bootstrap-common.sh

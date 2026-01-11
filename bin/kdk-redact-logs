@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+require_relative '../lib/kdk/config_redactor'
+
+input = $stdin.read.chomp
+puts KDK::ConfigRedactor.new.redact_logfile(input)

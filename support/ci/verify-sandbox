@@ -1,0 +1,48 @@
+#!/bin/bash -ex
+
+parent_path=$(dirname "$0")
+
+# shellcheck source=support/ci/functions.sh
+source "${parent_path}"/functions.sh
+
+function assert_equal() {
+  if [[ "$1" != "$2" ]]; then
+    echo "Expected '$1' to equal '$2': $3"
+    exit 1
+  fi
+}
+
+function admin_name() {
+  echo 'select name from users where id = 1;' | kdk psql --quiet --no-align --tuples-only
+}
+
+init
+cd_into_checkout_path
+
+kdk start db
+
+assert_equal "$(admin_name)" "Administrator" "Baseline requirement for seeded database."
+
+kdk sandbox enable
+
+assert_equal "$(admin_name)" "Administrator" "Data was not copied over correctly from head database."
+
+echo "update users set name = 'Dog' where id = 1;" | kdk psql
+
+assert_equal "$(admin_name)" "Dog" "'kdk psql' query did not update database correctly."
+
+kdk sandbox disable
+
+assert_equal "$(admin_name)" "Administrator" "'kdk sandbox disable' failed to restore head database."
+
+kdk sandbox enable
+
+assert_equal "$(admin_name)" "Dog" "'kdk sandbox enable' did not reload previously modified database."
+
+kdk sandbox reset
+
+assert_equal "$(admin_name)" "Administrator" "'kdk sandbox reset' did not reset the sandbox to the head database."
+
+kdk sandbox disable
+
+assert_equal "$(admin_name)" "Administrator" "'kdk sandbox disable' failed to restore head database."

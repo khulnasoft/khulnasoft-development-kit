@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+# Build docker image $1 from dir $2 for CI branch and repo
+
+set -e
+
+DOCKERFILE="Dockerfile"
+if [[ "$1" == "-f" ]]; then
+  DOCKERFILE="$2"
+  shift 2
+fi
+
+DIR="$1"
+IMAGE="$2"
+
+if [[ -z $DIR ]]; then
+  echo "Error: Directory must exist"
+  echo "Usage: $0 [-f dockerfile] <dir> [image]"
+  echo
+  echo "Build docker <image> from <dir> for current CI commit and repo"
+  echo
+  echo "Example:"
+  echo "  ./support/docker-build support/khulnasoft-remote-development workspace"
+  echo "  ./support/docker-build -f Dockerfile.base support/khulnasoft-remote-development workspace-base"
+  exit 1
+fi
+
+if [[ -z $IMAGE ]]; then
+  IMAGE="$(basename "$DIR"):local"
+fi
+
+if [[ -n $CI_REGISTRY_IMAGE ]]; then
+  IMAGE="$CI_REGISTRY_IMAGE/$IMAGE"
+fi
+
+REPO_URL="$CI_MERGE_REQUEST_SOURCE_PROJECT_URL"
+COMMIT="${CI_MERGE_REQUEST_SOURCE_BRANCH_SHA:-${CI_COMMIT_SHA}}"
+
+# import yellow
+# shellcheck source=support/bashlib/echo.sh
+source "$(dirname "$0")/bashlib/echo.sh"
+
+yellow "Building image: $IMAGE"
+yellow "From path:      $DIR"
+yellow "Using file:     $DOCKERFILE"
+yellow "For repo:       $REPO_URL"
+yellow "For commit:     $COMMIT"
+
+cd "$DIR" || { echo "Failed to change directory to $DIR"; exit 1; }
+
+BASE_IMAGE="${IMAGE%:*}"
+
+CACHE_FROM_ARGS="--cache-from=$BASE_IMAGE:main"
+yellow "Cache strategy:"
+
+DEPENDENCY_HASH="${DEPENDENCY_HASH:-}"
+CACHE_IMAGE=""
+if [[ -n "$DEPENDENCY_HASH" ]]; then
+  yellow "Dependency hash: $DEPENDENCY_HASH"
+  CACHE_IMAGE="$BASE_IMAGE:$DEPENDENCY_HASH"
+
+  # Check if image with the dependency hash already exists
+  if docker manifest inspect "$CACHE_IMAGE" >/dev/null 2>&1; then
+    yellow "Image with dependency hash already exists, skipping rebuild"
+    exit 0
+  fi
+fi
+
+if [[ "$CI_COMMIT_REF_SLUG" != "main" ]]; then
+  CACHE_FROM_ARGS="--cache-from=$BASE_IMAGE:$CI_COMMIT_REF_SLUG $CACHE_FROM_ARGS"
+  yellow "  1. $BASE_IMAGE:$CI_COMMIT_REF_SLUG (current branch)"
+  yellow "  2. $BASE_IMAGE:main (main branch)"
+else
+  yellow "  1. $BASE_IMAGE:main (main branch)"
+fi
+
+TAGS="--tag $IMAGE"
+if [[ -n "$DEPENDENCY_HASH" ]]; then
+  TAGS="$TAGS --tag $CACHE_IMAGE"
+fi
+
+if [[ -n $CI_REGISTRY_IMAGE ]]; then
+  # shellcheck disable=SC2086
+  docker buildx build \
+    --progress=plain \
+    --cache-to=type=inline \
+    $CACHE_FROM_ARGS \
+    --build-arg CI="$CI" \
+    --build-arg git_remote_origin_url="$REPO_URL" \
+    --build-arg git_checkout_branch="$COMMIT" \
+    --build-arg DEPENDENCY_HASH="$DEPENDENCY_HASH" \
+    --file "$DOCKERFILE" \
+    $TAGS \
+    "${@:3}" \
+    --push \
+    .
+else
+  # shellcheck disable=SC2086
+  docker buildx build \
+    --progress=plain \
+    --cache-to=type=inline \
+    $CACHE_FROM_ARGS \
+    --build-arg CI="$CI" \
+    --build-arg git_remote_origin_url="$REPO_URL" \
+    --build-arg git_checkout_branch="$COMMIT" \
+    --build-arg DEPENDENCY_HASH="$DEPENDENCY_HASH" \
+    --file "$DOCKERFILE" \
+    $TAGS \
+    "${@:3}" \
+    --load \
+    .
+
+  yellow "Registry is disabled, image loaded locally."
+fi

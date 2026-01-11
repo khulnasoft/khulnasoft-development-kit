@@ -1,0 +1,10 @@
+[tools]
+# For linting KDK documentation. See also .tool-versions
+lychee = "0.21.0"
+
+[tool_alias]
+vale = "asdf:vale"
+
+[settings]
+idiomatic_version_file_enable_tools = []
+

@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -exo pipefail
+
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")/../.." || exit ; pwd -P)"
+DOCKER_IMAGE_TAG="${CI_COMMIT_REF_SLUG:-main}"
+DOCKER_IMAGE_REGISTRY="${CI_REGISTRY_IMAGE:-registry.github.com/khulnasoft/khulnasoft-development-kit}"
+DOCKER_IMAGE="${DOCKER_IMAGE_REGISTRY}/khulnasoft-remote-workspace:${DOCKER_IMAGE_TAG}"
+
+FULL_REPO_NAME="${1:-khulnasoft-org/khulnasoft}"
+REPO_NAME="${FULL_REPO_NAME##*/}"
+PROJECT_REF="${2:-master}"
+KDK_ROOT_DIR="${3:-/home/khulnasoft-workspaces/workspace/khulnasoft-development-kit}"
+
+# Create a temporary file for the custom entrypoint
+CUSTOM_ENTRYPOINT=$(mktemp -p "${ROOT_PATH}")
+
+# Set up trap to clean up temporary file on script exit
+trap 'rm -f "$CUSTOM_ENTRYPOINT"' EXIT
+
+cat > "$CUSTOM_ENTRYPOINT" << EOF
+#!/usr/bin/env bash
+
+set -exo pipefail
+
+copy_artifacts(){
+  sudo cp \${KDK_ROOT_DIR}/kdk.yml /artifacts
+  sudo cp \${KDK_ROOT_DIR}/khulnasoft/config/khulnasoft.yml /artifacts
+
+  sudo mkdir -p /artifacts/log
+  sudo cp -r ${KDK_ROOT_DIR}/log/kdk /artifacts/log/
+}
+
+REPO_NAME="${REPO_NAME}"
+CLONE_DIR="/projects/\${REPO_NAME}"
+PROJECT_URL="https://khulnasoft.com/${FULL_REPO_NAME}.git"
+PROJECT_REF="${PROJECT_REF}"
+PROJECT_CLONING_SUCCESSFUL_FILE="/projects/.gl_project_cloning_successful"
+CLONE_DEPTH_OPTION="--depth 1"
+
+# Mimick project folder permissions
+sudo chown \$(whoami):root "/projects"
+sudo chmod g=u "/projects"
+sudo chmod g+s "/projects"
+
+curl -s https://github.com/khulnasoft/khulnasoft/-/raw/master/ee/lib/remote_development/workspace_operations/create/internal_poststart_command_clone_project.sh | \\
+sed -e "s|%<project_ref>s|\$PROJECT_REF|g" \\
+    -e "s|%<project_url>s|\$PROJECT_URL|g" \\
+    -e "s|%<clone_dir>s|\$CLONE_DIR|g" \\
+    -e "s|%<project_cloning_successful_file>s|\$PROJECT_CLONING_SUCCESSFUL_FILE|g" \\
+    -e "s|%<clone_depth_option>s|\$CLONE_DEPTH_OPTION|g" | \\
+bash
+
+trap copy_artifacts EXIT
+
+/tmp/setup_workspace.sh
+EOF
+
+cat "$CUSTOM_ENTRYPOINT"
+chmod 755 "${ROOT_PATH}" "$CUSTOM_ENTRYPOINT"
+
+if ! docker run --rm -t \
+      --group-add 0 \
+      -v "${CUSTOM_ENTRYPOINT}:/tmp/entrypoint.sh" \
+      -v "${ROOT_PATH}/support/khulnasoft-remote-development/setup_workspace.sh:/tmp/setup_workspace.sh" \
+      -v "${ROOT_PATH}/artifacts/:/artifacts" \
+      -v "/projects" \
+      -e "GL_WORKSPACE_DOMAIN_TEMPLATE=\${PORT}-workspace.workspaces.example.com" \
+      -e "SERVICE_PORT_KDK_3000=3000" \
+      -e "KDK_ROOT_DIR=${KDK_ROOT_DIR}" \
+      "${DOCKER_IMAGE}"; then
+  echo "ERROR: Failed to run in GRD Docker Image." >&2
+  exit 1
+else
+  echo "INFO: Successfully run in GRD Docker Image."
+fi

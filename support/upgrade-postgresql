@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'forwardable'
+require 'json'
+
+require_relative '../lib/kdk'
+
+upgrader = KDK::PostgresqlUpgrader.new
+upgrader.upgrade!

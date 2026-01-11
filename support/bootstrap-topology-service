@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+#
+# frozen_string_literal: true
+
+require_relative '../lib/kdk'
+
+def postgresql
+  @postgresql ||= KDK.config.geo.secondary? ? KDK::PostgresqlGeo.new : KDK::Postgresql.new
+end
+
+def db_name
+  @db_name ||= KDK.config.khulnasoft_topology_service.database_name
+end
+
+def db_host
+  @db_host ||= KDK.config.kdk_root.join('postgresql')
+end
+
+def create_database
+  flags = %W[--encoding=UTF8 --locale=C --template template0 --echo #{db_name}]
+  abort 'createdb failed' unless postgresql.createdb(flags)
+end
+
+def main
+  try_times = ENV['CI'] ? 600 : 10 # 10 mins on CI, 10 seconds otherwise.
+
+  abort 'postgres not ready' unless postgresql.ready?(try_times: try_times)
+
+  create_database unless postgresql.db_exists?(db_name)
+
+  data_source = "postgresql:///#{db_name}?host=#{db_host}"
+  abort 'migrate failed' unless system('support/migrate-topology-service', data_source)
+end
+
+main

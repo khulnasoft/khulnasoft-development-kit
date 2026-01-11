@@ -1,0 +1,180 @@
+#!/bin/bash
+
+# Integration test for duo agent platform services
+
+set -euo pipefail
+
+# ============================================================================
+# Utilities
+# ============================================================================
+
+log() {
+  echo "$*"
+}
+
+error() {
+  echo "ERROR: $*" >&2
+}
+
+# Make HTTP request and return status code and body
+http_request() {
+  local method=$1
+  local url=$2
+  shift 2
+  local temp_file
+  local http_code
+  local response
+
+  temp_file=$(mktemp)
+  http_code=$(curl -s -w "%{http_code}" -o "${temp_file}" -X "${method}" "${url}" "$@")
+  response=$(cat "${temp_file}")
+  rm -f "${temp_file}"
+
+  echo "${http_code}|${response}"
+}
+
+# ============================================================================
+# Setup
+# ============================================================================
+
+setup_environment() {
+  log "Setting up environment..."
+
+  # GCP credentials
+  base64 -d < "$GCP_SERVICE_ACCOUNT_KEY_FILE" > "${HOME}/gcp-key.json"
+  export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcp-key.json"
+
+  # API keys and debug flags
+  export ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
+  export FIREWORKS_API_KEY=$FIREWORKS_API_KEY
+  export AIGW_ENABLE_DEBUG="true"
+  export AIGW_ENABLE_HOT_RELOAD="false"
+  export KDK_ENABLE_DEBUG="true"
+  export MISE_VERBOSE=1
+
+  # Remove any global Git URL rewrites that force SSH for GitHub, ensuring HTTP is used.
+  # This prevents conflicts with mise tool installations that require HTTP access.
+  git config --global --unset url."git@github.com:".insteadOf || true
+
+  # KDK config
+  cat >> kdk.yml <<EOF
+hostname: localhost
+ai_services:
+  enabled: true
+nginx:
+  enabled: true
+  http:
+    enabled: true
+env:
+  DEVELOPMENT_AI_GATEWAY_URL: "http://localhost:5052"
+  FETCH_MODEL_SELECTION_DATA_FROM_LOCAL: "1"
+EOF
+
+  log "Setting up AI services..."
+  kdk rake setup_ai_services
+}
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+test_service_health() {
+  local url=$1
+  local max_attempts=${2:-30}
+  local retry_delay=${3:-30}
+  local result
+  local http_code
+  local response
+
+  log "Testing service health at ${url}..."
+
+  for attempt in $(seq 1 "${max_attempts}"); do
+    result=$(http_request GET "${url}")
+    http_code="${result%%|*}"
+    response="${result#*|}"
+
+    if [ "$http_code" -eq 200 ]; then
+      log "✓ Service is healthy (HTTP ${http_code})"
+      return 0
+    fi
+
+    log "Attempt ${attempt}/${max_attempts} failed (HTTP ${http_code}), retrying in ${retry_delay}s..."
+    sleep "${retry_delay}"
+  done
+
+  error "Service failed to respond after ${max_attempts} attempts"
+  error "Last response: ${response}"
+  return 1
+}
+
+test_chat_agent() {
+  local hostname=$1
+  local url="http://${hostname}:5052/v2/chat/agent"
+  local result
+
+  log "Testing chat agent at ${url}..."
+
+  local payload='{"messages":[{"content":"What is KhulnaSoft?","role":"user"}],"options":{"agent_scratchpad":{"agent_type":"react","steps":[{"thought":"string","tool":"string","tool_input":"string","observation":"string"}]}},"unavailable_resources":["Merge Requests, Pipelines, Vulnerabilities"]}'
+
+  result=$(http_request POST "${url}" -H "Content-Type: application/json" -d "${payload}")
+  local http_code="${result%%|*}"
+  local response="${result#*|}"
+
+  if [ "$http_code" -ne 200 ]; then
+    error "Chat agent returned HTTP ${http_code}"
+    error "Response: ${response}"
+    return 1
+  fi
+
+  if echo "$response" | grep -q '"type".*"final_answer_delta"' && \
+     echo "$response" | grep -q '"data".*"text"'; then
+    log "✓ Chat agent returned valid streaming response (HTTP ${http_code})"
+    log ""
+    log "Sample response (first 500 chars):"
+    echo "$response" | head -c 500
+    log "..."
+    return 0
+  else
+    error "Chat agent returned unexpected format (HTTP ${http_code})"
+    error "Expected: streaming JSON with 'final_answer_delta' and 'text' fields"
+    error "Response: ${response}"
+    return 1
+  fi
+}
+
+show_debug_info() {
+  log ""
+  log "Debug information:"
+  log "===================="
+  kdk status || true
+  log ""
+  log "AI Gateway logs (last 50 lines):"
+  log "===================="
+  kdk tail khulnasoft-ai-gateway -n 50 || true
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+main() {
+  setup_environment
+
+  local hostname
+  hostname=$(kdk config get hostname)
+
+  if ! test_service_health "http://${hostname}:5052/docs"; then
+    show_debug_info
+    exit 1
+  fi
+
+  if ! test_chat_agent "${hostname}"; then
+    show_debug_info
+    exit 1
+  fi
+
+  log ""
+  log "✓ All tests passed"
+}
+
+main

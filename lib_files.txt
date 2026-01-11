@@ -1,0 +1,18 @@
+total 0
+drwxr-xr-x   3 ksoft  staff   96 Jan 11 21:21 .
+drwxr-xr-x  15 ksoft  staff  480 Jan 11 21:25 ..
+drwxr-xr-x   3 ksoft  staff   96 Jan 11 21:21 kdk
+
+lib/kdk:
+total 0
+drwxr-xr-x  3 ksoft  staff   96 Jan 11 21:21 .
+drwxr-xr-x  3 ksoft  staff   96 Jan 11 21:21 ..
+drwxr-xr-x  5 ksoft  staff  160 Jan 11 21:25 command
+
+lib/kdk/command:
+total 24
+drwxr-xr-x  5 ksoft  staff   160 Jan 11 21:25 .
+drwxr-xr-x  3 ksoft  staff    96 Jan 11 21:21 ..
+-rw-r--r--  1 ksoft  staff  1411 Jan 11 21:25 cells.rb
+-rw-r--r--  1 ksoft  staff  3682 Jan 11 21:24 update.rb
+-rw-r--r--  1 ksoft  staff   639 Jan 11 21:22 version.rb

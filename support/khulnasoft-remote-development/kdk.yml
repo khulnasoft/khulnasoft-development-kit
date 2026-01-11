@@ -1,0 +1,24 @@
+---
+asdf:
+  opt_out: true
+mise:
+  enabled: true
+khulnasoft:
+  rails:
+    bootsnap: false
+    port: 443
+    https:
+      enabled: true
+webpack:
+  enabled: false
+vite:
+  enabled: true
+  hot_module_reloading: false
+telemetry:
+  environment: remote-development
+gitaly:
+  skip_compile: true
+khulnasoft_shell:
+  skip_compile: true
+workhorse:
+  skip_compile: true

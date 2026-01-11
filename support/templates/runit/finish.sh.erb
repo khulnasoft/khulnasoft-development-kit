@@ -1,0 +1,41 @@
+#!/bin/sh
+set -e
+
+exec 2>&1
+cd <%= kdk_root %>
+
+EXIT_CODE=$1
+EXIT_CODE_FILE="<%= sv_dir %>/last_exit_code"
+LOG_FILE="<%= kdk_root %>/log/<%= service_instance.name %>/current"
+
+if [ -f "sv/<%= service_instance.name %>/.stopping" ]; then
+  rm -f "sv/<%= service_instance.name %>/.stopping"
+  [ "$EXIT_CODE" != "0" ] && EXIT_CODE=0
+fi
+
+if [ -f "$EXIT_CODE_FILE" ]; then
+  PREV_EXIT_CODE=$(cat "$EXIT_CODE_FILE" 2>/dev/null || echo "")
+else
+  PREV_EXIT_CODE=""
+fi
+
+if [ "$EXIT_CODE" = "0" -o "$EXIT_CODE" != "$PREV_EXIT_CODE" ]; then
+  LAST_ERROR=""
+
+  if [ "$EXIT_CODE" != "0" ] && [ -f "$LOG_FILE" ]; then
+    LAST_ERROR=$(tail -n 1 "$LOG_FILE" 2>/dev/null | bin/kdk-redact-logs || echo "")
+  fi
+
+  if [ -n "$LAST_ERROR" ]; then
+    kdk send-telemetry service_finish '<%= service_instance.name %>' \
+      --extra='command:<%= redacted_command.gsub(/'/, "''") %>' \
+      --extra="exit_code:$EXIT_CODE" \
+      --extra="last_error:'$LAST_ERROR'" &
+  else
+    kdk send-telemetry service_finish '<%= service_instance.name %>' \
+      --extra='command:<%= redacted_command.gsub(/'/, "''") %>' \
+      --extra="exit_code:$EXIT_CODE" &
+  fi
+fi
+
+echo "$EXIT_CODE" > "$EXIT_CODE_FILE"
