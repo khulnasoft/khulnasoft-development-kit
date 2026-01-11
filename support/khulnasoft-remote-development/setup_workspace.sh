@@ -2,7 +2,7 @@
 
 set -eox pipefail
 
-[[ -z "$GL_WORKSPACE_DOMAIN_TEMPLATE" ]] && { echo "Nothing to do as we're not a KhulnaSoft Workspace."; exit 0; }
+[[ -z "$KS_WORKSPACE_DOMAIN_TEMPLATE" ]] && { echo "Nothing to do as we're not a KhulnaSoft Workspace."; exit 0; }
 
 eval "$(/home/khulnasoft-workspaces/.local/bin/mise activate bash --shims)" || { echo "mise activation failed."; exit 1; }
 
@@ -11,7 +11,7 @@ KDK_SETUP_FLAG_FILE="${KDK_ROOT_DIR}/.cache/.kdk_setup_complete"
 WORKSPACE_DIR_NAME="${WORKSPACE_DIR_NAME:-~/workspace}"
 BOOTSTRAPPED_KDK_DIR="${BOOTSTRAPPED_KDK_DIR:-${WORKSPACE_DIR_NAME}/khulnasoft-development-kit}"
 KDK_PORT=$(env | grep SERVICE_PORT_KDK_ | awk -F= '{ print $2 }')
-KDK_URL=$(echo "${GL_WORKSPACE_DOMAIN_TEMPLATE}" | sed -r 's/\$\{PORT\}/'"${KDK_PORT}"'/')
+KDK_URL=$(echo "${KS_WORKSPACE_DOMAIN_TEMPLATE}" | sed -r 's/\$\{PORT\}/'"${KDK_PORT}"'/')
 MY_IP=$(getent hosts "$(hostname)" | awk '{print $1}')
 TIMINGS=()
 

@@ -1,14 +1,19 @@
 # frozen_string_literal: true
 
 RSpec.describe KDK::Command do
-  commands = described_class::COMMANDS
+    let(:commands) { described_class.command_map }
 
   context 'with declared available command classes' do
-    commands.each_value do |command_class_proc|
-      it "expects #{command_class_proc.call} to inherit from KDK::Command::BaseCommand directly or indirectly" do
-        command_class = command_class_proc.call
+    before do
+      commands.each_value do |command_class_proc|
+        # KDK::Command::Removed is a special case that does not inherit from BaseCommand
+        next if command_class_proc.call == KDK::Command::Removed
 
-        expect(command_class < KDK::Command::BaseCommand).to be_truthy
+        it "expects #{command_class_proc.call} to inherit from KDK::Command::BaseCommand directly or indirectly" do
+          command_class = command_class_proc.call
+
+          expect(command_class < KDK::Command::BaseCommand).to be_truthy
+        end
       end
     end
   end
@@ -110,7 +115,7 @@ RSpec.describe KDK::Command do
     end
 
     before do
-      stub_env('GL_WORKSPACE_DOMAIN_TEMPLATE', in_workspace ? '1' : nil)
+      stub_env('KS_WORKSPACE_DOMAIN_TEMPLATE', in_workspace ? '1' : nil)
 
       allow(KDK::Logo).to receive(:print)
       allow(KDK::Command::Help).to receive(:help).and_return([KDK::Command::BaseCommand::HelpItem.new(subcommand: '', description: help_text)])
