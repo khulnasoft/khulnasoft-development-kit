@@ -37,7 +37,7 @@ class SendTelemetry
   private
 
   def workspace_environment?
-    !ENV['GL_WORKSPACE_DOMAIN_TEMPLATE'].to_s.empty?
+    !ENV['KS_WORKSPACE_DOMAIN_TEMPLATE'].to_s.empty?
   end
 
   def wait_for_setup_flag_file(timeout_seconds)
@@ -100,7 +100,7 @@ class SendTelemetry
 
   def url
     port = ENV.find { |key, _| key.include?('SERVICE_PORT_KDK') }&.last
-    ENV.fetch('GL_WORKSPACE_DOMAIN_TEMPLATE', '').gsub('${PORT}', port.to_s)
+    ENV.fetch('KS_WORKSPACE_DOMAIN_TEMPLATE', '').gsub('${PORT}', port.to_s)
   end
 end
 

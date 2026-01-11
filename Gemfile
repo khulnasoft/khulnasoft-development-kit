@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gemspec path: 'gem/'
 
 gem 'openssl', '~> 3.3.1'
+gem 'snowplow-tracker'
 
 group :development do
   gem 'lefthook', '~> 2.0.1', require: false
@@ -20,6 +21,9 @@ group :test do
   gem 'rspec_junit_formatter', '~> 0.6.0', require: false
   gem 'simplecov-cobertura', '~> 3.0.0', require: false
   gem 'webmock', '~> 3.25', require: false
+  gem 'tzinfo'
+  gem 'activesupport'
+  gem 'rack'
 end
 
 group :development, :test, :danger do

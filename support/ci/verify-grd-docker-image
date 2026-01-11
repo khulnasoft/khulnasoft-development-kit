@@ -65,7 +65,7 @@ if ! docker run --rm -t \
       -v "${ROOT_PATH}/support/khulnasoft-remote-development/setup_workspace.sh:/tmp/setup_workspace.sh" \
       -v "${ROOT_PATH}/artifacts/:/artifacts" \
       -v "/projects" \
-      -e "GL_WORKSPACE_DOMAIN_TEMPLATE=\${PORT}-workspace.workspaces.example.com" \
+      -e "KS_WORKSPACE_DOMAIN_TEMPLATE=\${PORT}-workspace.workspaces.example.com" \
       -e "SERVICE_PORT_KDK_3000=3000" \
       -e "KDK_ROOT_DIR=${KDK_ROOT_DIR}" \
       "${DOCKER_IMAGE}"; then

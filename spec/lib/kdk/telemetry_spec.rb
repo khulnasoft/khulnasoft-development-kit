@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'khulnasoft-sdk'
 require 'sentry-ruby'
 require 'snowplow-tracker'
 

@@ -13,13 +13,12 @@ Gem::Specification.new do |spec|
   spec.description   = 'CLI for KhulnaSoft Development Kit.'
   spec.homepage      = 'https://github.com/khulnasoft/khulnasoft-development-kit'
   spec.license       = 'MIT'
-  spec.files         = ['lib/khulnasoft_development_kit.rb']
+  spec.files         = Dir['lib/**/*.rb']
   spec.executables   = ['kdk']
 
   spec.required_ruby_version = '>= 3.2.0'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
-  spec.add_dependency 'khulnasoft-sdk', '~> 0.3.1'
   spec.add_dependency 'rake', '~> 13.1'
   spec.add_dependency 'sentry-ruby', '~> 5.23'
   spec.add_dependency 'terminal-table', '~> 3.0.2'

@@ -15,7 +15,7 @@ RSpec.describe SendTelemetry do
   before do
     stub_const('KDK::Config::FILE', temp_path.join('kdk.yml'))
     stub_persisted_kdk_yaml({ 'telemetry' => { 'enabled' => telemetry_enabled } })
-    stub_env('GL_WORKSPACE_DOMAIN_TEMPLATE', 'workspace.example.com')
+    stub_env('KS_WORKSPACE_DOMAIN_TEMPLATE', 'workspace.example.com')
 
     allow(send_telemetry).to receive(:system).and_return(true)
     allow(FileUtils).to receive(:touch)

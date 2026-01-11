@@ -21,7 +21,7 @@ RSpec.describe KDK::ToolVersionsUpdater do
     let(:gitaly_version) { 'a' * 40 }
     let(:khulnasoft_url) { "https://github.com/khulnasoft/khulnasoft/-/raw/#{khulnasoft_branch}/.tool-versions" }
     let(:khulnasoft_shell_url) { "https://github.com/khulnasoft/khulnasoft-shell/-/raw/#{khulnasoft_shell_version}/.tool-versions" }
-    let(:gitaly_url) { "https://github.com/khulnasoft/gitaly/-/raw/#{gitaly_version}/.tool-versions" }
+    let(:gitaly_url) { "https://gitlab.com/gitlab-org/gitaly/-/raw/#{gitaly_version}/.tool-versions" }
 
     before do
       allow(KDK.config).to receive_message_chain(:khulnasoft, :default_branch).and_return(khulnasoft_branch)

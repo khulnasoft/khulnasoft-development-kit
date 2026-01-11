@@ -17,6 +17,9 @@ SimpleCov.start
 require_relative '../lib/kdk_src'
 require_relative '../lib/kdk'
 require_relative '../lib/kdk/task_helpers'
+require_relative '../lib/khulnasoft_sdk'
+require_relative '../lib/kdk/command'
+require_relative '../lib/kdk/command/base_command' # Add this line # Added to ensure KhulnasoftSDK is loaded
 
 require 'rake'
 require "active_support/concern"
